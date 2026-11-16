@@ -406,6 +406,10 @@ for (const [table, parse] of [
       where += " AND category=?";
       args.unshift(text(req.query.category, 100));
     }
+    if (table === "jobs" && ["open", "closed"].includes(req.query.status)) {
+      where += " AND status=?";
+      args.unshift(req.query.status);
+    }
     where +=
       " AND (title LIKE ? OR " +
       (table === "posts" ? "content" : "location") +
@@ -460,13 +464,11 @@ app.post("/api/contacts", (req, res) => {
     JSON.stringify(d),
     new Date().toISOString(),
   );
-  res
-    .status(201)
-    .json({
-      id,
-      message:
-        "Yêu cầu đã được lưu. Bộ phận phụ trách sẽ tiếp nhận thông tin của bạn.",
-    });
+  res.status(201).json({
+    id,
+    message:
+      "Yêu cầu đã được lưu. Bộ phận phụ trách sẽ tiếp nhận thông tin của bạn.",
+  });
 });
 app.post(
   "/api/applications",
@@ -480,54 +482,80 @@ app.post(
   },
   upload.single("file"),
   (req, res) => {
-    let b = req.body,
-      j = one(
-        "SELECT id FROM jobs WHERE id=? AND status='open'",
-        text(b.job_id, 100),
-      );
-    if (!j) throw fail("Vị trí không còn nhận hồ sơ.");
-    let d = {
-      ...details(b),
-      birth: required(b.birth, "Ngày sinh", 10),
+    const b = req.body;
+    const jobId = text(b.job_id, 100);
+    const j = jobId
+      ? one("SELECT id FROM jobs WHERE id=? AND status='open'", jobId)
+      : null;
+    if (jobId && !j) throw fail("Vị trí không còn nhận hồ sơ.");
+    const d = {
+      ...(jobId
+        ? details(b)
+        : {
+            name: required(b.name, "Họ tên", 120),
+            phone: required(b.phone, "Số điện thoại", 24),
+            email: text(b.email, 200),
+          }),
+      birth: jobId ? required(b.birth, "Ngày sinh", 10) : text(b.birth, 10),
       gender: text(b.gender, 50),
-      address: required(b.address, "Địa chỉ hiện tại", 500),
+      address: jobId
+        ? required(b.address, "Địa chỉ hiện tại", 500)
+        : text(b.address, 500),
       education: text(b.education, 300),
-      experience: required(b.experience, "Kinh nghiệm", 10000),
+      experience: jobId
+        ? required(b.experience, "Kinh nghiệm", 10000)
+        : text(b.experience, 10000),
       intro: required(b.intro, "Giới thiệu bản thân", 10000),
+      location: jobId
+        ? text(b.location, 500)
+        : required(b.location, "Khu vực mong muốn", 500),
+      availability: text(b.availability, 500),
     };
     if (
-      !/^\d{4}-\d{2}-\d{2}$/.test(d.birth) ||
-      !Number.isFinite(Date.parse(d.birth)) ||
-      new Date(d.birth).toISOString().slice(0, 10) !== d.birth ||
-      new Date(d.birth) > new Date() ||
-      new Date(d.birth).getFullYear() < 1900
+      !/^(?:\+84|0)[\d\s.-]{8,13}$/.test(d.phone) ||
+      d.phone.replace(/\D/g, "").length < 10
+    )
+      throw fail("Số điện thoại Việt Nam không hợp lệ.");
+    if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email))
+      throw fail("Email không hợp lệ.");
+    if (
+      d.birth &&
+      (!/^\d{4}-\d{2}-\d{2}$/.test(d.birth) ||
+        !Number.isFinite(Date.parse(d.birth)) ||
+        new Date(d.birth).toISOString().slice(0, 10) !== d.birth ||
+        new Date(d.birth) > new Date() ||
+        new Date(d.birth).getFullYear() < 1900)
     )
       throw fail("Ngày sinh không hợp lệ.");
     if (b.consent !== "true")
       throw fail("Vui lòng đồng ý xử lý hồ sơ ứng tuyển.");
-    let file_id = storeFile(req.file),
+    let file_id = req.file
+        ? storeFile(req.file)
+        : jobId
+          ? storeFile(req.file)
+          : null,
       id = randomUUID();
     try {
       run(
         "INSERT INTO applications(id,job_id,data,file_id,created_at) VALUES(?,?,?,?,?)",
         id,
-        j.id,
+        j?.id || null,
         JSON.stringify(d),
         file_id,
         new Date().toISOString(),
       );
     } catch (e) {
       let f = one("SELECT * FROM files WHERE id=?", file_id);
-      run("DELETE FROM files WHERE id=?", file_id);
-      unlinkSync(resolve(uploadDir, f.disk_name));
+      if (f) {
+        run("DELETE FROM files WHERE id=?", file_id);
+        unlinkSync(resolve(uploadDir, f.disk_name));
+      }
       throw e;
     }
-    res
-      .status(201)
-      .json({
-        id,
-        message: "Hồ sơ đã được lưu và chuyển đến bộ phận tuyển dụng.",
-      });
+    res.status(201).json({
+      id,
+      message: "Hồ sơ đã được lưu và chuyển đến bộ phận tuyển dụng.",
+    });
   },
 );
 for (const table of ["contacts", "applications"]) {
@@ -538,8 +566,9 @@ for (const table of ["contacts", "applications"]) {
         data: JSON.parse(r.data),
         ...(table === "applications"
           ? {
-              job_title: one("SELECT title FROM jobs WHERE id=?", r.job_id)
-                ?.title,
+              job_title: r.job_id
+                ? one("SELECT title FROM jobs WHERE id=?", r.job_id)?.title
+                : "Đăng ký ứng tuyển chung",
             }
           : {}),
       }),
@@ -598,7 +627,7 @@ const esc = (v) =>
       ],
   );
 app.get(
-  /^\/(?!api(?:\/|$)|media(?:\/|$)|assets(?:\/|$)|robots\.txt$|sitemap\.xml$).*$/,
+  /^\/(?!api(?:\/|$)|media(?:\/|$)|assets(?:\/|$)|company-images(?:\/|$)|fonts(?:\/|$)|robots\.txt$|sitemap\.xml$).*$/,
   (req, res, next) => {
     if (!existsSync(resolve(dist, "index.html"))) return next();
     let s = settings(),
@@ -709,6 +738,8 @@ app.get("/sitemap.xml", (req, res) => {
 });
 app.use((req, res, next) => {
   if (req.method !== "GET") return next();
+  if (/^\/(?:assets|company-images|fonts)(?:\/|$)/.test(req.path))
+    return res.status(404).send("Không tìm thấy tệp.");
   if (!existsSync(resolve(dist, "index.html")))
     return res.status(503).send("Chạy npm run build trước khi khởi động.");
   res.sendFile(resolve(dist, "index.html"));

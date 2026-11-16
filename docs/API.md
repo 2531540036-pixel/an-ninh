@@ -9,15 +9,17 @@ Cùng origin với website, JSON UTF-8 trừ upload `multipart/form-data`. Lỗi
 | GET | `/api/site` | Thông tin công ty, chỉ các trường dùng công khai |
 | GET | `/api/posts?q=&category=&page=1` | Bài xuất bản, 6 bài/trang; trả items,total,page,pages |
 | GET | `/api/posts/:slug` | Chi tiết bài xuất bản |
-| GET | `/api/jobs?q=&page=1` | Danh sách vị trí, cả trạng thái mở/đóng |
+| GET | `/api/jobs?q=&status=open&page=1` | Danh sách vị trí; có thể lọc status=open/closed |
 | GET | `/api/jobs/:slug` | Chi tiết vị trí |
 | POST | `/api/contacts` | Lưu yêu cầu tư vấn |
-| POST | `/api/applications` | Nhận hồ sơ ứng tuyển, có file |
+| POST | `/api/applications` | Nhận hồ sơ theo vị trí hoặc đăng ký chung |
 | GET | `/media/:id` | Chỉ ảnh được đánh dấu public; hồ sơ bị từ chối |
 
 Liên hệ: `name, phone, email, service, location, message` bắt buộc; `company, quantity` tùy chọn; `consent: true` bắt buộc.
 
-Ứng tuyển: `name, birth (YYYY-MM-DD), phone, email, address, job_id, experience, intro, file` bắt buộc; `gender, education` tùy chọn; `consent` chuỗi `true`. Vị trí phải đang mở. File PDF/DOC/DOCX tối đa 5 MB. Tất cả dữ liệu DEMO trong test được ghi rõ và tự xóa.
+Ứng tuyển theo vị trí: `name, birth (YYYY-MM-DD), phone, email, address, job_id, experience, intro, file` bắt buộc; `gender, education` tùy chọn; `consent` chuỗi `true`. Vị trí phải đang mở. File PDF/DOC/DOCX tối đa 5 MB. Tất cả dữ liệu DEMO trong test được ghi rõ và tự xóa.
+
+Đăng ký chung (không gửi `job_id`): bắt buộc `name, phone, location, intro, consent` (chuỗi `true`). Email và CV tùy chọn; `availability` lưu thời gian/ca mong muốn. Hồ sơ có `job_id: null`, hiển thị “Đăng ký ứng tuyển chung” trong Admin. Tệp đính kèm vẫn được xác thực định dạng/dung lượng và bảo vệ như hồ sơ theo vị trí.
 
 ## Xác thực quản trị
 

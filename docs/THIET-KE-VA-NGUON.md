@@ -2,13 +2,13 @@
 
 ## Nhận diện và hình ảnh đã cung cấp
 
-Ảnh là các trang hồ sơ năng lực được chụp bằng điện thoại, nhiều trang xoay ngang hoặc có phối cảnh; một số trang lặp lại. Nền xanh dương, tiêu đề xanh đậm, điểm nhấn vàng và đồng phục xanh nhạt là nền tảng bảng màu website. Không dùng huy hiệu lực lượng công an như logo mới của doanh nghiệp. Logo công ty cần tải bản gốc, không tự vẽ lại từ ảnh chụp.
+Ảnh là các trang hồ sơ năng lực được chụp bằng điện thoại, nhiều trang xoay ngang hoặc có phối cảnh; một số trang lặp lại. Nền xanh dương, tiêu đề xanh đậm, điểm nhấn vàng và đồng phục xanh nhạt là nền tảng bảng màu website. Không dùng huy hiệu lực lượng công an như logo mới của doanh nghiệp. Logo đang hiển thị đúng vùng nhận diện công ty trên ảnh bìa đã cung cấp, không vẽ lại hoặc tái tạo bằng AI.
 
 | Nhóm trang ảnh | Nội dung quan sát | Cách dùng và giới hạn |
 |---|---|---|
 | Bộ đàm, roi và công cụ hỗ trợ | Trang bị trong hồ sơ | Dẫn nội dung năng lực theo hồ sơ, không suy diễn quyền sử dụng/giấy phép hiện tại |
 | Đại hội tổ chức Đảng ngày 24/4/2015 | Ảnh tập thể và sinh hoạt doanh nghiệp | Tài liệu lịch sử, không dùng làm ảnh hero hoặc khẳng định hiện trạng tổ chức |
-| Huấn luyện PCCC và sơ cấp cứu | Hoạt động thực hành, hướng dẫn | Nội dung đào tạo, chờ ảnh gốc đủ chất lượng |
+| Huấn luyện PCCC và sơ cấp cứu | Hoạt động thực hành, hướng dẫn | Đã tích hợp ảnh thật bằng vùng hiển thị SVG |
 | Sổ BHXH | Hồ sơ có tên và mã cá nhân | Không công khai ảnh nguyên bản có dữ liệu cá nhân |
 | Tập thể nhân viên, rèn võ thuật | Đội ngũ và hoạt động huấn luyện | Phù hợp phần con người/đào tạo; không đếm số người để suy ra tổng nhân sự |
 | Giấy khen cơ quan thuế Đà Nẵng | Tài liệu ghi năm 2014, cấp 2015 | Không suy diễn giải thưởng hiện hành hay mức tuân thủ hiện tại |
@@ -63,4 +63,8 @@ Không sao chép nội dung quảng cáo, số điện thoại, chứng nhận, 
 - `/bao-mat`: mục đích, phạm vi lưu trữ và cách yêu cầu xử lý dữ liệu.
 - `/admin`: đăng nhập → đổi mật khẩu lần đầu → tổng quan/tin tức/liên hệ/hồ sơ/vị trí/cấu hình.
 
-Thiết kế: nền trắng/ngà, xanh navy và xanh dương, vàng làm điểm nhấn; lưới rõ ràng, góc vuông, khoảng trắng rộng; font hệ thống hỗ trợ tiếng Việt. Menu thu gọn trên mobile, form chuyển một cột, bảng Admin cuộn ngang. Hiệu ứng hover nhẹ và hỗ trợ reduced motion. Cần kiểm tra trình duyệt thật trước khi xác nhận chất lượng hiển thị.
+Thiết kế mới: nền trắng và xanh sáng, các mảng navy, xanh dương làm điểm nhấn; typography Manrope hỗ trợ tiếng Việt, ảnh thật, khối bo góc, thẻ dịch vụ có ảnh, thư viện lọc và hộp xem lớn. Menu thu gọn trên mobile, form chuyển một cột, bảng Admin cuộn ngang. Hiệu ứng hover nhẹ và hỗ trợ reduced motion. Cần kiểm tra trình duyệt thật trước khi xác nhận chất lượng hiển thị.
+
+## Cập nhật 16/11/2026
+
+Thay toàn bộ bố cục công khai. Trang tuyển dụng có nội dung nghề nghiệp, nhiệm vụ, yêu cầu, quyền lợi cần trao đổi, FAQ và form đăng ký chung không phụ thuộc tin tuyển dụng. Không tạo tin tuyển dụng hay mức lương giả. Ảnh nguồn công khai được chọn trong `src/company-media.js`; giữ nguyên tệp và trình bày qua SVG viewBox. Không sử dụng các trang chứa hồ sơ cá nhân.

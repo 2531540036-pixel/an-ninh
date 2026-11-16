@@ -2,25 +2,27 @@
 > an-ninh-security@1.0.0 test
 > node --test tests/*.test.mjs
 
-✔ 01. Chặn quản trị và tải file khi chưa đăng nhập (110.454241ms)
-✔ 02. Đăng nhập, bắt buộc đổi mật khẩu và kết thúc phiên cũ (190.391789ms)
-✔ 03. Bài viết: nháp, xuất bản, tìm kiếm, sửa, ẩn (22.4384ms)
-✔ 04. Liên hệ: kiểm tra dữ liệu và Admin nhận được thông tin (18.027615ms)
-✔ 05. Tuyển dụng: tạo vị trí và công khai đầy đủ thông tin (3.961034ms)
-✔ 06. Hồ sơ: upload, lưu database, tải riêng tư và cập nhật trạng thái (20.339498ms)
-✔ 07. Từ chối giả mạo file, quá dung lượng, ngày sai và vị trí đã đóng (36.49762ms)
-✔ 08. Ảnh công khai hợp lệ, chặn SVG và sửa cấu hình công ty (9.732194ms)
-✔ 09. Chống yêu cầu khác nguồn, dữ liệu tồn tại khi mở lại database, thống kê đúng (43.883488ms)
-✔ 10. Xóa bài, liên hệ, hồ sơ, tệp và vị trí; đăng xuất (16.200826ms)
-✔ 11. HTML, SEO từng trang, sitemap và các tệp giao diện build (8.118044ms)
-ℹ tests 11
+✔ 01. Chặn quản trị và tải file khi chưa đăng nhập (109.222663ms)
+✔ 02. Đăng nhập, bắt buộc đổi mật khẩu và kết thúc phiên cũ (202.837138ms)
+✔ 03. Bài viết: nháp, xuất bản, tìm kiếm, sửa, ẩn (17.408538ms)
+✔ 04. Liên hệ: kiểm tra dữ liệu và Admin nhận được thông tin (18.567479ms)
+✔ 05. Tuyển dụng: tạo vị trí và công khai đầy đủ thông tin (4.243821ms)
+✔ 06. Hồ sơ: upload, lưu database, tải riêng tư và cập nhật trạng thái (19.328519ms)
+✔ 07. Từ chối giả mạo file, quá dung lượng, ngày sai và vị trí đã đóng (33.416411ms)
+✔ 08. Ảnh công khai hợp lệ, chặn SVG và sửa cấu hình công ty (11.814638ms)
+✔ 08b. Đăng ký chung khi không có vị trí: CV/email tùy chọn, dữ liệu riêng tư và xác thực (26.314873ms)
+✔ 09. Chống yêu cầu khác nguồn, dữ liệu tồn tại khi mở lại database, thống kê đúng (43.758735ms)
+✔ 10. Xóa bài, liên hệ, hồ sơ, tệp và vị trí; đăng xuất (12.53141ms)
+✔ 11. HTML, SEO từng trang, sitemap và các tệp giao diện build (12.144166ms)
+✔ Nâng cấp database cũ giữ hồ sơ, file, trạng thái và quan hệ vị trí (56.367056ms)
+ℹ tests 13
 ℹ suites 0
-ℹ pass 11
+ℹ pass 13
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 707.611103
+ℹ duration_ms 6844.787652
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.2
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
