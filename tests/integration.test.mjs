@@ -316,6 +316,10 @@ await test("09. Chống yêu cầu khác nguồn, dữ liệu tồn tại khi m�
     ).status,
     403,
   );
+  process.env.SITE_URL = "https://anninh-preview.example.test";
+  assert.equal((await req("/admin/settings", "PUT", {tagline: "DEMO — Proxy origin"}, true, {Origin: "https://anninh-preview.example.test"})).status, 200);
+  assert.equal((await req("/admin/settings", "PUT", {tagline: "bad"}, true, {Origin: "https://evil.example"})).status, 403);
+  delete process.env.SITE_URL;
   let second = new DatabaseSync(join(directory, "site.sqlite"));
   assert.equal(second.prepare("SELECT COUNT(*) n FROM contacts").get().n, 1);
   assert.equal(

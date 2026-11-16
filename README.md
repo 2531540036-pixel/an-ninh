@@ -2,6 +2,18 @@
 
 Bản Full-stack chạy trên máy chủ riêng: React 19, Vite 6, Node.js 24, Express 5 và SQLite thật. Biểu mẫu không lưu hồ sơ vào localStorage. Dữ liệu nằm trong `data/site.sqlite`; tệp hồ sơ nằm ngoài thư mục web công khai, trong `data/uploads/`.
 
+## Xem website trên trình duyệt, không cài Node.js trên máy
+
+1. **[Bấm mở GitHub Codespaces cho kho này](https://codespaces.new/2531540036-pixel/an-ninh)**.
+2. Đăng nhập GitHub nếu được yêu cầu, chọn **Create codespace** và đợi môi trường thiết lập xong.
+3. Website sẽ được khởi chạy và cổng **3000** được chuyển tiếp. Nếu chưa tự mở, chọn tab **PORTS** phía dưới, tìm cổng **3000**, bấm **Open in Browser** (biểu tượng quả địa cầu).
+
+Đây là bản chạy trong Codespace của bạn, không phải website đã xuất bản trên tên miền công ty. Quyền dùng và thời gian chạy Codespaces theo tài khoản GitHub của bạn. Dừng Codespace khi xem xong; xóa Codespace cũng xóa database/tệp nằm trong môi trường đó nếu chưa sao lưu.
+
+Tài khoản Admin được tạo riêng lần đầu, nằm trong tệp `data/admin-first-login.txt` bên trong Codespace. Mở tệp trong Explorer của Codespace để xem; không đưa tệp này lên GitHub. Website vẫn bắt buộc đổi mật khẩu lần đăng nhập đầu.
+
+Nếu cần khởi chạy lại trong Codespace, mở Terminal và chạy `bash .devcontainer/start.sh`.
+
 ## Chạy bản bàn giao
 
 Cần Node.js **24 trở lên** và npm.
@@ -79,13 +91,13 @@ npm run build
 npm test
 ```
 
-Các bài kiểm thử tạo dữ liệu có tiền tố **DEMO**, dùng thư mục tạm, không làm thay đổi database vận hành. Chạy build trước test để kiểm tra cả các tệp giao diện và metadata HTML. `npm run dev` khởi động cùng máy chủ với `npm start`; sau khi sửa giao diện cần `npm run build` lại. Đây là lựa chọn giữ API và frontend cùng origin, tránh cấu hình CORS cho người dùng cuối.
+Các bài kiểm thử tạo dữ liệu có tiền tố **DEMO**, dùng thư mục tạm, không làm thay đổi database vận hành. Chạy build trước test để kiểm tra cả các tệp giao diện và metadata HTML. `npm run dev` khởi động cùng máy chủ với `npm start` và nhận thêm các tham số `--host` / `--port` của công cụ preview; sau khi sửa giao diện cần `npm run build` lại. Đây là lựa chọn giữ API và frontend cùng origin, tránh cấu hình CORS cho người dùng cuối.
 
 ## Lưu trữ và bảo vệ
 
 - SQLite là database trên đĩa thực, có WAL và foreign keys, không thay bằng bộ nhớ trình duyệt. Chọn SQLite để bản bàn giao chạy ngay, không yêu cầu tài khoản database bên ngoài. Đây là thay đổi so với lựa chọn ưu tiên MySQL/PostgreSQL trong yêu cầu; không có mã nguồn cũ để phải giữ nguyên công nghệ.
 - Truy vấn tham số hóa. Mật khẩu băm scrypt với salt riêng. Token phiên ngẫu nhiên, lưu SHA-256 trong database, hết hạn sau 8 giờ; cookie HttpOnly và SameSite=Strict.
-- Kiểm tra Origin cho thao tác ghi; giới hạn đăng nhập, đổi mật khẩu và gửi form theo địa chỉ IP.
+- Kiểm tra Origin cho thao tác ghi theo `SITE_URL` được cấu hình (hoặc origin của máy chủ khi chưa cấu hình); giới hạn đăng nhập, đổi mật khẩu và gửi form theo địa chỉ IP.
 - File tối đa 5 MB; kiểm tra phần mở rộng và dấu hiệu định dạng. Chặn SVG/HTML. Hồ sơ PDF/DOC/DOCX phục vụ dưới dạng attachment sau khi xác thực.
 - Không có bộ quét antivirus/CDR tích hợp. Kiểm tra định dạng không thay thế quét nội dung tệp; nếu quy trình vận hành yêu cầu quét, tích hợp dịch vụ đó trước khi mở nhận hồ sơ rộng rãi.
 - Nội dung bài viết được React escape, không dùng `dangerouslySetInnerHTML`. CSP chỉ cho chạy script nội bộ.
@@ -108,7 +120,7 @@ Không dùng hosting static-only cho bản Full-stack này. Nền tảng serverl
 ## Trạng thái bàn giao
 
 - Có mã nguồn thực thi, schema khởi tạo database, API và chức năng quản trị đã kiểm thử HTTP. Database và tài khoản được tạo riêng trên máy chạy ứng dụng.
-- Chưa có URL trực tuyến: môi trường không có các script Sites `project-setup.mjs` / `site-workflow.mjs`; không tạo Site rỗng hoặc tuyên bố đã deploy.
+- Chưa có URL triển khai cố định. Đã có cấu hình Codespaces để người dùng tự khởi chạy và xem website trong tài khoản GitHub; chưa tự tạo hoặc kiểm thử Codespace trên tài khoản người dùng.
 - Chưa kiểm thử UI bằng trình duyệt, chưa có screenshot: công cụ `cua_repl.js` của managed preview không được cung cấp. Build thành công không đồng nghĩa đã kiểm chứng hiển thị trên điện thoại.
 - Ảnh được gửi trong chat đã dùng để phân tích, nhưng không có tệp ảnh trong filesystem/download pointer để nhúng vào mã nguồn. Không lấy ảnh người bảo vệ giả. Các vùng ảnh hiện ghi rõ chờ ảnh gốc; tải ảnh thật qua Admin để thay thế. Biểu tượng khi chưa có logo là ký hiệu giao diện tạm, không phải logo công ty được dựng lại.
 - Ngày thành lập **25/6/2006** và người sáng lập **ông Nguyễn Duy Tư**, từng là sĩ quan nghiệp vụ trong lực lượng CAND, theo thông tin người dùng cung cấp. Tiểu sử chi tiết chờ bổ sung. Không tự đồng nhất ngày thành lập do người dùng cung cấp với ngày đăng ký trên giấy tờ.

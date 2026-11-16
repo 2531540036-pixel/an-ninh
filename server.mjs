@@ -38,7 +38,10 @@ app.use(express.json({ limit: "1mb" }));
 app.use((req, res, next) => {
   if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
     let origin = req.get("origin");
-    if (origin && origin !== `${req.protocol}://${req.get("host")}`)
+    const expectedOrigin = process.env.SITE_URL
+      ? new URL(process.env.SITE_URL).origin
+      : `${req.protocol}://${req.get("host")}`;
+    if (origin && origin !== expectedOrigin)
       return res.status(403).json({ error: "Nguồn yêu cầu không hợp lệ." });
   }
   next();
