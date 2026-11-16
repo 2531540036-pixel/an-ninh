@@ -69,6 +69,12 @@ npm start
 
 Các đường dẫn tương đối tính từ thư mục chạy lệnh; hãy chạy trong thư mục dự án.
 
+### Admin báo “Nguồn yêu cầu không hợp lệ” trong Codespaces
+
+Máy chủ nhận thêm đúng origin HTTPS của Codespace hiện tại từ `CODESPACE_NAME`, `PORT` và `GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN` (mặc định `app.github.dev`). Cách này hoạt động cả khi khởi chạy bằng `npm start` hoặc còn cấu hình `SITE_URL` trỏ về localhost. Không chấp nhận wildcard cho các Codespace khác hoặc lấy nguồn tin cậy từ header do client gửi. `SITE_URL` tiếp tục dùng cho tên miền chính thức và metadata.
+
+Cập nhật mã bằng `git pull origin main`, sau đó chạy `bash .devcontainer/reload.sh`. Mở lại đường dẫn HTTPS ở tab **PORTS → 3000 → Open in Browser**, thêm `/admin` và đăng nhập. Lệnh này giữ nguyên database và tài khoản hiện có.
+
 ## Cập nhật nội dung
 
 1. Vào `/admin`, đăng nhập và đổi mật khẩu tạm.

@@ -6,7 +6,7 @@ Ngày bàn giao: 16/11/2026 (giờ Việt Nam).
 
 `npm run build`: thành công. React/Vite tạo HTML, CSS và JavaScript production, không phụ thuộc CDN frontend.
 
-`npm test`: 13 nhóm kiểm thử HTTP và nâng cấp database. Dùng dữ liệu có nhãn DEMO trong database/tệp tạm; sau kiểm thử được xóa. Không đưa dữ liệu giả vào database vận hành.
+`npm test`: 18 nhóm kiểm thử HTTP, nâng cấp database và nguồn yêu cầu đăng nhập. Dùng dữ liệu có nhãn DEMO trong database/tệp tạm; sau kiểm thử được xóa. Không đưa dữ liệu giả vào database vận hành.
 
 | Nhóm | Nội dung |
 |---|---|
@@ -25,6 +25,8 @@ Ngày bàn giao: 16/11/2026 (giờ Việt Nam).
 | 11 | HTTP HTML và JS production; title/canonical; CSP; Admin noindex; sitemap; ảnh JPEG/font thực sự phục vụ đúng MIME và ảnh thiếu trả 404 |
 
 Kết quả chạy thực tế được lưu tại `docs/test-output.txt` trong gói mã nguồn.
+
+Kiểm tra hồi quy lỗi Admin trên Codespaces: đăng nhập thực sự với tài khoản thử nghiệm thành công qua origin HTTPS đúng khi `SITE_URL` cũ là localhost và chưa bật trust proxy; khởi chạy trực tiếp không có `SITE_URL` cũng thành công. Giữ cờ cookie HttpOnly, SameSite=Strict và Secure ở production. Từ chối Codespace khác, sai cổng/giao thức, miền giả, Origin null và header chuyển tiếp giả. Đăng nhập local và tên miền production đã cấu hình tiếp tục hoạt động. Tất cả 18 nhóm qua; chưa truy cập trực tiếp Codespace của người dùng để xác nhận trên trình duyệt.
 
 ## Chưa kiểm chứng
 

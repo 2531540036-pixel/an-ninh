@@ -35,13 +35,35 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: "1mb" }));
+function requestOrigins(req) {
+  const origins = new Set();
+  const add = (value) => {
+    try {
+      const url = new URL(value);
+      if (["http:", "https:"].includes(url.protocol)) origins.add(url.origin);
+    } catch {
+      // An invalid configured address must never allow an arbitrary origin.
+    }
+  };
+  add(process.env.SITE_URL || `${req.protocol}://${req.get("host")}`);
+  const codespace = process.env.CODESPACE_NAME;
+  const domain =
+    process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN || "app.github.dev";
+  // Codespaces terminates HTTPS before forwarding to the HTTP server. Derive
+  // its exact public origin from the environment, never from forwarded headers
+  // or a wildcard shared with other users' Codespaces.
+  if (
+    codespace &&
+    /^[a-z0-9-]+$/i.test(codespace) &&
+    /^[a-z0-9.-]+$/i.test(domain)
+  )
+    add(`https://${codespace}-${port}.${domain}`);
+  return origins;
+}
 app.use((req, res, next) => {
   if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
-    let origin = req.get("origin");
-    const expectedOrigin = process.env.SITE_URL
-      ? new URL(process.env.SITE_URL).origin
-      : `${req.protocol}://${req.get("host")}`;
-    if (origin && origin !== expectedOrigin)
+    const origin = req.get("origin");
+    if (origin && !requestOrigins(req).has(origin))
       return res.status(403).json({ error: "Nguồn yêu cầu không hợp lệ." });
   }
   next();
