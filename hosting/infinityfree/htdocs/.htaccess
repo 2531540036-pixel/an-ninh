@@ -1,0 +1,11 @@
+DirectoryIndex index.php
+Options -Indexes -MultiViews
+RewriteEngine On
+RewriteRule ^(?:_app|_private)(?:/|$) - [F,L,NC]
+RewriteRule (^|/)\. - [F,L]
+RewriteRule \.(?:sql|sqlite|log|env|zip|bak)$ - [F,L,NC]
+RewriteRule ^(?:api|media)(?:/|$) index.php [QSA,L]
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^ index.php [QSA,L]

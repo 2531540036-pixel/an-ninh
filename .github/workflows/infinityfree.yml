@@ -1,0 +1,75 @@
+name: Deploy InfinityFree
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'hosting/infinityfree/**'
+      - 'scripts/package-infinityfree.mjs'
+      - 'scripts/deploy-infinityfree.py'
+      - '.github/workflows/infinityfree.yml'
+      - 'dist/**'
+      - 'src/**'
+permissions:
+  contents: read
+concurrency:
+  group: infinityfree-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check hosting connection is configured
+        id: ready
+        shell: bash
+        env:
+          INFINITYFREE_FTP_HOST: ${{ secrets.INFINITYFREE_FTP_HOST }}
+          INFINITYFREE_FTP_USER: ${{ secrets.INFINITYFREE_FTP_USER }}
+          INFINITYFREE_FTP_PASSWORD: ${{ secrets.INFINITYFREE_FTP_PASSWORD }}
+        run: |
+          if [ -n "$INFINITYFREE_FTP_HOST" ] && [ -n "$INFINITYFREE_FTP_USER" ] && [ -n "$INFINITYFREE_FTP_PASSWORD" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo 'Chưa tải lên: cần thêm ba FTP Secrets theo hosting/infinityfree/HUONG-DAN.md.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Checkout source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Use Node.js 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Build React and package PHP website
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          node scripts/package-infinityfree.mjs
+          cp hosting/infinityfree/HUONG-DAN.md hosting/infinityfree/build/HUONG-DAN.md
+      - name: Downloadable hosting package without credentials
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: An-Ninh-InfinityFree
+          path: hosting/infinityfree/build/
+          include-hidden-files: true
+          retention-days: 7
+      - name: Upload website over FTPS
+        if: steps.ready.outputs.ready == 'true'
+        env:
+          INFINITYFREE_FTP_HOST: ${{ secrets.INFINITYFREE_FTP_HOST }}
+          INFINITYFREE_FTP_USER: ${{ secrets.INFINITYFREE_FTP_USER }}
+          INFINITYFREE_FTP_PASSWORD: ${{ secrets.INFINITYFREE_FTP_PASSWORD }}
+          INFINITYFREE_FTP_DIR: ${{ vars.INFINITYFREE_FTP_DIR }}
+          INFINITYFREE_SITE_URL: ${{ vars.INFINITYFREE_SITE_URL }}
+          INFINITYFREE_DB_HOST: ${{ secrets.INFINITYFREE_DB_HOST }}
+          INFINITYFREE_DB_NAME: ${{ secrets.INFINITYFREE_DB_NAME }}
+          INFINITYFREE_DB_USER: ${{ secrets.INFINITYFREE_DB_USER }}
+          INFINITYFREE_DB_PASSWORD: ${{ secrets.INFINITYFREE_DB_PASSWORD }}
+          INFINITYFREE_SETUP_KEY: ${{ secrets.INFINITYFREE_SETUP_KEY }}
+        run: python3 scripts/deploy-infinityfree.py
+      - name: Hosting upload result
+        if: steps.ready.outputs.ready == 'true' && success()
+        run: |
+          echo 'Đã tải tệp qua FTPS. Mở tên miền hosting và /cai-dat.php để tạo Admin lần đầu. Luồng này không xóa hồ sơ hay cơ sở dữ liệu.' >> "$GITHUB_STEP_SUMMARY"

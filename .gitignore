@@ -7,3 +7,12 @@ data/
 *.sqlite-wal
 *.sqlite-shm
 Tai-khoan-quan-tri.txt
+hosting/infinityfree/htdocs/_private/config.php
+hosting/infinityfree/htdocs/_private/installed.lock
+hosting/infinityfree/htdocs/_private/uploads/*
+!hosting/infinityfree/htdocs/_private/uploads/.htaccess
+hosting/infinityfree/htdocs/_app/template.html
+hosting/infinityfree/htdocs/assets/
+hosting/infinityfree/htdocs/fonts/
+hosting/infinityfree/htdocs/company-images/
+hosting/infinityfree/build/

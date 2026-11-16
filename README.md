@@ -1,5 +1,7 @@
 # Website Công ty An Ninh
 
+**Hosting InfinityFree:** dùng bản PHP/MySQL tại [hosting/infinityfree/HUONG-DAN.md](hosting/infinityfree/HUONG-DAN.md). Quy trình **Actions → Deploy InfinityFree** đóng gói giao diện và tải lên bằng FTPS sau khi cấu hình GitHub Secrets. Khách xem và Admin dùng chung một website.
+
 Bản Full-stack chạy trên máy chủ riêng: React 19, Vite 6, Node.js 24, Express 5 và SQLite thật. Biểu mẫu không lưu hồ sơ vào localStorage. Dữ liệu nằm trong `data/site.sqlite`; tệp hồ sơ nằm ngoài thư mục web công khai, trong `data/uploads/`.
 
 ## Xem website trên trình duyệt, không cài Node.js trên máy

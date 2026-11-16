@@ -1,0 +1,23 @@
+✔ 00. Trình cài đặt: sai mã bị chặn, đúng mã tạo Admin (509.075509ms)
+✔ 01. Chặn quản trị và tải file khi chưa đăng nhập (70.33676ms)
+✔ 02. Đăng nhập, bắt buộc đổi mật khẩu và kết thúc phiên cũ (406.268835ms)
+✔ 03. Bài viết: nháp, xuất bản, tìm kiếm, sửa, ẩn (37.593173ms)
+✔ 04. Liên hệ: kiểm tra dữ liệu và Admin nhận được thông tin (41.065339ms)
+✔ 05. Tuyển dụng: tạo vị trí và công khai đầy đủ thông tin (19.1299ms)
+✔ 06. Hồ sơ: upload, lưu database, tải riêng tư và cập nhật trạng thái (43.136348ms)
+✔ 07. Từ chối giả mạo file, quá dung lượng, ngày sai và vị trí đã đóng (160.49907ms)
+✔ 08. Ảnh công khai hợp lệ, chặn SVG và sửa cấu hình công ty (32.215984ms)
+✔ 08b. Đăng ký chung khi không có vị trí: CV/email tùy chọn, dữ liệu riêng tư và xác thực (71.963125ms)
+✔ 09. Chống yêu cầu khác nguồn, dữ liệu tồn tại khi mở lại database, thống kê đúng (16.123658ms)
+✔ 10. Xóa bài, liên hệ, hồ sơ, tệp và vị trí; đăng xuất (42.569244ms)
+✔ 11. HTML, SEO từng trang, sitemap và các tệp giao diện build (20.19217ms)
+✔ 12. Apache chặn cấu hình, SQL, CV trực tiếp và dotfile (6.021246ms)
+✔ 13. Giới hạn đăng nhập, thiếu Origin và nguồn giả mạo (277.970722ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1827.638457
