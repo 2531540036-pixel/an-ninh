@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowUpRight,
@@ -33,6 +33,8 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import "./style.css";
+import Photo from "./Photo.jsx";
+import { media, serviceMedia, gallery } from "./company-media.js";
 const h = React.createElement;
 const services = [
   {
@@ -139,6 +141,10 @@ function App() {
         !a.hasAttribute("download") &&
         !a.pathname.startsWith("/api/") &&
         !a.pathname.startsWith("/media/") &&
+        !a.pathname.startsWith("/company-images/") &&
+        e.button === 0 &&
+        !e.shiftKey &&
+        !e.altKey &&
         !e.ctrlKey &&
         !e.metaKey
       ) {
@@ -206,7 +212,7 @@ function App() {
     ) : path.startsWith("/tin-tuc/") ? (
       <Post slug={path.split("/")[2]} />
     ) : path === "/tuyen-dung" ? (
-      <Careers />
+      <Careers site={site} />
     ) : path.startsWith("/tuyen-dung/") ? (
       <Job slug={path.split("/")[2]} />
     ) : path === "/lien-he" ? (
@@ -219,7 +225,9 @@ function App() {
   return (
     <>
       <Header site={site} path={path} />
-      <main key={path}>{page}</main>
+      <main id="noi-dung" key={path}>
+        {page}
+      </main>
       <Footer site={site} />
       {site.hotline && (
         <a className="quick-call" href={"tel:" + site.hotline}>
@@ -240,70 +248,72 @@ function App() {
     </>
   );
 }
+function Brand({ site }) {
+  return (
+    <a className="brand" href="/" aria-label="An Ninh — Trang chủ">
+      <Photo src={site.logo} photo={media.logo} className="brand-mark" eager />
+      <span>
+        <strong>{site.shortName}</strong>
+        <small>SECURITY SERVICE</small>
+      </span>
+    </a>
+  );
+}
 function Header({ site, path }) {
-  let [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    const close = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, []);
   return (
     <>
-      <div className="topbar">
-        <div className="container">
-          <span>CÔNG TY CỔ PHẦN DỊCH VỤ BẢO VỆ AN NINH</span>
-          <span>
-            Thành lập ngày {site.founded} <i />{" "}
-            {site.hotline ? (
-              <a href={"tel:" + site.hotline}>{site.hotline}</a>
-            ) : (
-              "Nơi gửi trọn niềm tin"
-            )}
-          </span>
-        </div>
-      </div>
-      <header>
+      <a className="skip-link" href="#noi-dung">
+        Đến nội dung
+      </a>
+      <header className="site-header">
         <div className="container header-inner">
-          <a className="brand" href="/">
-            {site.logo ? (
-              <img src={site.logo} alt="Logo An Ninh" />
-            ) : (
-              <ShieldCheck size={40} strokeWidth={1.4} />
-            )}
-            <span>
-              <strong>{site.shortName}</strong>
-              <small>SECURITY SERVICE</small>
-            </span>
+          <Brand site={site} />
+          <nav
+            id="main-nav"
+            className={open ? "open" : ""}
+            aria-label="Điều hướng chính"
+          >
+            {[
+              ["/", "Trang chủ"],
+              ["/gioi-thieu", "Về An Ninh"],
+              ["/dich-vu", "Dịch vụ"],
+              ["/tin-tuc", "Hoạt động"],
+              ["/tuyen-dung", "Tuyển dụng"],
+            ].map(([url, title]) => (
+              <a
+                key={url}
+                href={url}
+                aria-current={
+                  path === url || (url !== "/" && path.startsWith(url + "/"))
+                    ? "page"
+                    : undefined
+                }
+              >
+                {title}
+              </a>
+            ))}
+          </nav>
+          <a className="button header-cta" href="/lien-he">
+            Kết nối với chúng tôi <ArrowUpRight size={17} />
           </a>
           <button
             className="menu-toggle"
-            aria-label={open ? "Đóng menu" : "Mở menu"}
+            aria-controls="main-nav"
             aria-expanded={open}
+            aria-label={open ? "Đóng menu" : "Mở menu"}
             onClick={() => setOpen(!open)}
           >
             {open ? <X /> : <Menu />}
           </button>
-          <nav className={open ? "open" : ""}>
-            {[
-              ["/", "Trang chủ"],
-              ["/gioi-thieu", "Giới thiệu"],
-              ["/dich-vu", "Dịch vụ"],
-              ["/tin-tuc", "Tin tức"],
-              ["/tuyen-dung", "Tuyển dụng"],
-              ["/lien-he", "Liên hệ"],
-            ].map(([url, t]) => (
-              <a
-                className={
-                  path === url || (url !== "/" && path.startsWith(url + "/"))
-                    ? "active"
-                    : ""
-                }
-                href={url}
-                key={url}
-              >
-                {t}
-              </a>
-            ))}
-          </nav>
-          <a href="/lien-he" className="button header-cta">
-            Yêu cầu tư vấn <ArrowUpRight size={16} />
-          </a>
         </div>
       </header>
     </>
@@ -315,38 +325,6 @@ function Button({ href, children, light = false }) {
       {children}
       <ArrowUpRight size={18} />
     </a>
-  );
-}
-function Photo({ src, type = "team", className = "", caption = true }) {
-  return src ? (
-    <figure className={"photo " + className}>
-      <img
-        src={src}
-        alt={
-          type === "training"
-            ? "Hoạt động huấn luyện của công ty"
-            : "Hình ảnh thực tế của công ty An Ninh"
-        }
-      />
-    </figure>
-  ) : (
-    <figure className={"photo placeholder " + className}>
-      <div className="architecture">
-        <div className="building b1" />
-        <div className="building b2" />
-        <div className="building b3" />
-        <div className="ground" />
-        <Shield size={90} strokeWidth={0.7} />
-      </div>
-      {caption && (
-        <figcaption>
-          {type === "training"
-            ? "Ảnh huấn luyện nghiệp vụ"
-            : "Ảnh đội ngũ An Ninh"}{" "}
-          · chờ bổ sung bản gốc
-        </figcaption>
-      )}
-    </figure>
   );
 }
 function Label({ children }) {
@@ -374,262 +352,298 @@ function SectionTitle({ label, title, children, link }) {
     </div>
   );
 }
+function ServiceCards({ site, items = services }) {
+  return (
+    <div className="service-grid">
+      {items.map((service) => {
+        const index = services.indexOf(service);
+        return (
+          <a
+            className="service-card"
+            href={`/dich-vu/${service.slug}`}
+            key={service.slug}
+          >
+            <div className="service-picture">
+              <Photo
+                src={site[serviceImageKeys[index]]}
+                photo={serviceMedia[index]}
+              />
+              <span className="round-arrow">
+                <ArrowUpRight size={22} />
+              </span>
+            </div>
+            <div className="service-body">
+              <span className="service-number">
+                0{index + 1} / DỊCH VỤ BẢO VỆ
+              </span>
+              <h3>{service.title}</h3>
+              <p>{service.desc}</p>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+function ActivityGallery({ compact = false }) {
+  const [category, setCategory] = useState("Tất cả"),
+    [selected, setSelected] = useState(null);
+  const dialog = useRef(null);
+  useEffect(() => {
+    if (selected) dialog.current?.showModal();
+  }, [selected]);
+  const items = (compact ? gallery.slice(0, 4) : gallery).filter(
+    (item) => category === "Tất cả" || item.category === category,
+  );
+  return (
+    <div className="activity-gallery">
+      {!compact && (
+        <div className="gallery-filters" aria-label="Lọc ảnh">
+          {["Tất cả", "Đội ngũ", "Đào tạo", "Mục tiêu", "Ghi nhận"].map((c) => (
+            <button
+              key={c}
+              aria-pressed={category === c}
+              className={category === c ? "selected" : ""}
+              onClick={() => setCategory(c)}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className={compact ? "gallery-grid compact" : "gallery-grid"}>
+        {items.map((item) => (
+          <button
+            className="gallery-item"
+            key={item.title}
+            onClick={() => setSelected(item)}
+            aria-label={`Xem ảnh: ${item.title}`}
+          >
+            <Photo photo={item.photo} />
+            <span>
+              <small>{item.category}</small>
+              <strong>{item.title}</strong>
+              <Plus size={20} />
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="photo-source">Hình ảnh từ hồ sơ công ty qua các thời kỳ.</p>
+      <dialog
+        ref={dialog}
+        className="photo-dialog"
+        onClose={() => setSelected(null)}
+        onClick={(e) => {
+          if (e.target === dialog.current) dialog.current.close();
+        }}
+      >
+        {selected && (
+          <>
+            <div className="dialog-top">
+              <div>
+                <small>{selected.category}</small>
+                <h3>{selected.title}</h3>
+              </div>
+              <button
+                autoFocus
+                onClick={() => dialog.current.close()}
+                aria-label="Đóng ảnh"
+              >
+                <X />
+              </button>
+            </div>
+            <Photo photo={selected.photo} contain />
+            <p>{selected.photo.alt}. Hình ảnh tư liệu trong hồ sơ công ty.</p>
+          </>
+        )}
+      </dialog>
+    </div>
+  );
+}
 function Home({ site }) {
-  let [posts, setPosts] = useState([]),
-    [jobs, setJobs] = useState([]);
+  const [posts, setPosts] = useState([]);
   useEffect(() => {
     api("/posts")
       .then((d) => setPosts(d.items.slice(0, 3)))
       .catch(() => {});
-    api("/jobs")
-      .then((d) =>
-        setJobs(d.items.filter((x) => x.status === "open").slice(0, 2)),
-      )
-      .catch(() => {});
   }, []);
   return (
     <>
-      <section className="hero">
+      <section className="hero container">
         <div className="hero-copy">
-          <Label>AN NINH · SECURITY SERVICE</Label>
+          <Label>AN NINH · TỪ NĂM 2006</Label>
           <h1>
-            Vững nghiệp vụ.
+            Vững vàng
             <br />
-            Trọn <em>niềm tin.</em>
+            bảo vệ.
+            <br />
+            <span>Trọn vẹn niềm tin.</span>
           </h1>
           <p>
-            Dịch vụ bảo vệ dành cho doanh nghiệp, đơn vị và cá nhân. Phương án
-            cụ thể cho từng mục tiêu, bắt đầu từ việc hiểu đúng nhu cầu của bạn.
+            Đồng hành cùng doanh nghiệp trong việc bảo vệ con người, tài sản và
+            sự an toàn mỗi ngày.
           </p>
           <div className="actions">
-            <Button href="/lien-he">Liên hệ tư vấn</Button>
-            <a className="hero-secondary" href="/dich-vu">
-              Khám phá dịch vụ <ArrowRight size={20} />
+            <Button href="/lien-he">Tư vấn phương án bảo vệ</Button>
+            <a className="text-link" href="/gioi-thieu">
+              Về An Ninh <ArrowRight size={18} />
             </a>
-          </div>
-          <div className="hero-foot">
-            <ShieldCheck size={24} />
-            <span>
-              Bảo vệ con người. Gìn giữ tài sản.
-              <br />
-              <strong>Đồng hành cùng sự an toàn của đơn vị.</strong>
-            </span>
           </div>
         </div>
         <div className="hero-visual">
-          <Photo src={site.hero} />
-          <div className="hero-date">
-            <span>TỪ NGÀY</span>
+          <div className="visual-top">
+            <span>
+              <i /> CON NGƯỜI LÀ NỀN TẢNG
+            </span>
+            <ShieldCheck size={25} />
+          </div>
+          <Photo src={site.hero || site.team} photo={media.team} eager />
+          <div className="hero-image-caption">
+            <span>
+              Đội ngũ An Ninh
+              <small>
+                Kỷ luật trong tác phong. Trách nhiệm trong công việc.
+              </small>
+            </span>
+            <span className="image-index">01 / AN NINH</span>
+          </div>
+          <a className="hero-mini" href="/gioi-thieu#hinh-anh">
+            <Photo src={site.training} photo={media.training} />
+            <span>
+              Từ huấn luyện
+              <br />
+              <strong>đến thực tiễn.</strong>
+            </span>
+            <ArrowUpRight size={24} />
+          </a>
+        </div>
+      </section>
+      <section className="trust-strip">
+        <div className="container">
+          <div>
             <strong>
-              25.06<span>2006</span>
+              2006<span>KHỞI ĐẦU HÀNH TRÌNH</span>
             </strong>
-            <small>Dấu mốc thành lập An Ninh</small>
+            <p>Thành lập ngày {site.founded}</p>
           </div>
-          <div className="visual-label">
-            AN NINH SECURITY <span>01 / GIỚI THIỆU</span>
+          <div>
+            <ShieldCheck />
+            <span>
+              Bảo vệ bằng
+              <br />
+              <strong>tinh thần trách nhiệm</strong>
+            </span>
           </div>
-        </div>
-      </section>
-      <div className="service-strip container">
-        <span>LĨNH VỰC BẢO VỆ</span>
-        {services.map((s) => (
-          <a key={s.slug} href={"/dich-vu/" + s.slug}>
-            <s.icon size={23} />
-            {s.title}
-            <ArrowUpRight size={15} />
-          </a>
-        ))}
-      </div>
-      <section className="section container about-home">
-        <div className="about-image">
-          <Photo src={site.team} />
-          <div className="image-note">
-            <span>AN NINH</span>Tác phong từ nền tảng nghiệp vụ
+          <div>
+            <Users />
+            <span>
+              Xây dựng từ
+              <br />
+              <strong>nền tảng con người</strong>
+            </span>
           </div>
-        </div>
-        <div>
-          <Label>VỀ CHÚNG TÔI</Label>
-          <h2>
-            An toàn của bạn.
-            <br />
-            Trách nhiệm của chúng tôi.
-          </h2>
-          <p>{site.about}</p>
-          <div className="founder">
-            <span>NGƯỜI SÁNG LẬP</span>
-            <strong>Ông {site.founder}</strong>
-            <p>Từng là sĩ quan nghiệp vụ trong lực lượng Công an nhân dân.</p>
-          </div>
-          <a href="/gioi-thieu" className="text-link">
-            Tìm hiểu về An Ninh <ArrowRight size={18} />
+          <a href="/gioi-thieu#hinh-anh">
+            Khám phá hình ảnh thực tế <ArrowUpRight size={20} />
           </a>
         </div>
       </section>
-      <section className="section cream">
-        <div className="container">
-          <SectionTitle
-            label="DỊCH VỤ BẢO VỆ"
-            title={
-              <>
-                Mỗi mục tiêu.
-                <br />
-                Một phương án phù hợp.
-              </>
-            }
-            link={{ href: "/dich-vu", text: "Tất cả dịch vụ" }}
-          >
-            Khảo sát đặc điểm hoạt động để xác định phạm vi công việc, ca trực
-            và trách nhiệm phối hợp.
-          </SectionTitle>
-          <div className="service-grid">
-            {services.map((s, i) => (
-              <a
-                className="service-card"
-                href={"/dich-vu/" + s.slug}
-                key={s.slug}
-              >
-                {site[serviceImageKeys[i]] && (
-                  <img
-                    className="service-thumb"
-                    src={site[serviceImageKeys[i]]}
-                    alt={s.title}
-                  />
-                )}
-                <div className="service-top">
-                  <s.icon size={42} strokeWidth={1} />
-                  <span>0{i + 1}</span>
-                </div>
-                <h3>{s.title}</h3>
-                <p>{s.desc}</p>
-                <span className="text-link">
-                  Xem chi tiết <ArrowUpRight size={18} />
-                </span>
-              </a>
-            ))}
-          </div>
-          <div className="service-note">
-            Bạn có yêu cầu bảo vệ khác?{" "}
-            <a href="/lien-he">
-              Trao đổi với chúng tôi <ArrowRight size={15} />
-            </a>
-          </div>
-        </div>
+      <section className="section container">
+        <SectionTitle
+          label="GIẢI PHÁP AN NINH"
+          title={
+            <>
+              Hiểu từng mục tiêu.
+              <br />
+              Bảo vệ đúng nhu cầu.
+            </>
+          }
+          link={{ href: "/dich-vu", text: "Khám phá dịch vụ" }}
+        >
+          Phương án riêng cho đặc điểm vận hành của từng đơn vị.
+        </SectionTitle>
+        <ServiceCards site={site} />
       </section>
-      <section className="section container training">
-        <div>
-          <Label>NỀN TẢNG NGHIỆP VỤ</Label>
-          <h2>
-            Sẵn sàng từ
-            <br />
-            những buổi huấn luyện.
-          </h2>
-          <p>
-            Hồ sơ doanh nghiệp ghi nhận hoạt động đào tạo nghiệp vụ bảo vệ, rèn
-            luyện võ thuật, phòng cháy chữa cháy và tập huấn ứng xử tại cơ sở y
-            tế.
-          </p>
-          <div className="training-list">
-            {[
-              [
-                GraduationCap,
-                "Nghiệp vụ bảo vệ",
-                "Rèn tác phong, kỹ năng quan sát và xử lý tình huống.",
-              ],
-              [
-                Flame,
-                "Phòng cháy & chữa cháy",
-                "Thực hành sử dụng phương tiện và phối hợp khi có sự cố.",
-              ],
-              [
-                ClipboardCheck,
-                "Quy trình & ứng xử",
-                "Chú trọng bàn giao, báo cáo và giao tiếp tại mục tiêu.",
-              ],
-            ].map(([Icon, t, d]) => (
-              <div key={t}>
-                <Icon size={24} />
-                <span>
-                  <strong>{t}</strong>
-                  <p>{d}</p>
-                </span>
-              </div>
-            ))}
+      <section className="story-section">
+        <div className="container story-layout">
+          <div className="story-image">
+            <Photo src={site.team} photo={media.hospital} />
+            <span className="vertical-caption">
+              AN NINH / CON NGƯỜI & TRÁCH NHIỆM
+            </span>
           </div>
-          <a className="text-link" href="/gioi-thieu#nang-luc">
-            Xem năng lực doanh nghiệp <ArrowRight size={18} />
-          </a>
-        </div>
-        <Photo src={site.training} type="training" />
-      </section>
-      <section className="process section">
-        <div className="container">
-          <SectionTitle
-            label="QUY TRÌNH PHỐI HỢP"
-            title="Rõ việc, rõ trách nhiệm."
-          />
-          <div className="steps">
-            {[
-              "Tiếp nhận yêu cầu",
-              "Khảo sát mục tiêu",
-              "Đề xuất phương án",
-              "Thống nhất hợp đồng",
-              "Triển khai nhân sự",
-              "Kiểm tra & giám sát",
-            ].map((t, i) => (
-              <div key={t}>
-                <span>0{i + 1}</span>
-                <h3>{t}</h3>
-              </div>
-            ))}
+          <div className="story-copy">
+            <Label>CÂU CHUYỆN AN NINH</Label>
+            <h2>
+              Niềm tin bắt đầu
+              <br />
+              từ trách nhiệm.
+            </h2>
+            <p>
+              Được thành lập bởi ông {site.founder}, từng là sĩ quan nghiệp vụ
+              trong lực lượng Công an nhân dân, An Ninh mang nền tảng nghiệp vụ
+              vào công tác bảo vệ.
+            </p>
+            <p>
+              Chúng tôi hướng đến sự an toàn của con người và tài sản, góp phần
+              giữ gìn trật tự trong hoạt động của mỗi đơn vị.
+            </p>
+            <div className="values-inline">
+              <span>
+                <Check size={17} /> Trách nhiệm
+              </span>
+              <span>
+                <Check size={17} /> Kỷ luật
+              </span>
+              <span>
+                <Check size={17} /> Phối hợp
+              </span>
+            </div>
+            <Button href="/gioi-thieu" light>
+              Tìm hiểu về chúng tôi
+            </Button>
           </div>
         </div>
       </section>
       <section className="section container">
         <SectionTitle
-          label="TIN TỨC & HOẠT ĐỘNG"
-          title="Góc nhìn từ An Ninh."
-          link={{ href: "/tin-tuc", text: "Xem tất cả" }}
-        />
-        {posts.length ? (
+          label="CON NGƯỜI AN NINH"
+          title="Nghiệp vụ được rèn luyện mỗi ngày."
+          link={{ href: "/gioi-thieu#hinh-anh", text: "Xem thư viện ảnh" }}
+        >
+          Từ tác phong, nghiệp vụ bảo vệ đến PCCC và kỹ năng sơ cấp cứu.
+        </SectionTitle>
+        <ActivityGallery compact />
+      </section>
+      <section className="career-banner container">
+        <div>
+          <Label>ĐỒNG HÀNH CÙNG AN NINH</Label>
+          <h2>
+            Một công việc có trách nhiệm.
+            <br />
+            Một đội ngũ để gắn bó.
+          </h2>
+          <p>
+            Tìm hiểu nghề bảo vệ và để lại thông tin ứng tuyển. Chúng tôi tiếp
+            nhận hồ sơ để trao đổi khi có công việc phù hợp.
+          </p>
+          <Button href="/tuyen-dung">Tìm hiểu & đăng ký ứng tuyển</Button>
+        </div>
+        <Photo src={site.training} photo={media.training} />
+      </section>
+      {posts.length > 0 && (
+        <section className="section container">
+          <SectionTitle
+            label="TIN TỨC & HOẠT ĐỘNG"
+            title="Nhịp sống An Ninh."
+            link={{ href: "/tin-tuc", text: "Tất cả bài viết" }}
+          />
           <div className="news-grid">
             {posts.map((p) => (
               <PostCard key={p.id} post={p} />
             ))}
           </div>
-        ) : (
-          <Empty
-            title="Tin tức đang được cập nhật"
-            text="Các hoạt động và thông tin mới sẽ được đăng tải tại đây."
-          />
-        )}
-      </section>
-      <section className="recruit-banner container">
-        <div>
-          <Label>CƠ HỘI NGHỀ NGHIỆP</Label>
-          <h2>
-            Cùng An Ninh
-            <br />
-            gìn giữ sự bình yên.
-          </h2>
-          <p>
-            {jobs.length
-              ? "Tìm hiểu các vị trí đang tuyển và gửi hồ sơ trực tiếp đến bộ phận phụ trách."
-              : "Theo dõi thông báo tuyển dụng chính thức từ công ty."}
-          </p>
-        </div>
-        <div>
-          {jobs.map((j) => (
-            <a className="job-mini" href={"/tuyen-dung/" + j.slug} key={j.id}>
-              <span>
-                <strong>{j.title}</strong>
-                <small>{j.location}</small>
-              </span>
-              <ArrowUpRight />
-            </a>
-          ))}
-          <Button href="/tuyen-dung">Khám phá cơ hội việc làm</Button>
-        </div>
-      </section>
+        </section>
+      )}
       <ConsultCTA />
     </>
   );
@@ -638,11 +652,9 @@ function PageHead({ label, title, text }) {
   return (
     <section className="page-head">
       <div className="container">
-        <div className="breadcrumb">
-          <a href="/">Trang chủ</a>
-          <ChevronRight size={14} />
-          {label}
-        </div>
+        <a className="breadcrumb" href="/">
+          An Ninh <ChevronRight size={14} /> <span>{label}</span>
+        </a>
         <Label>{label}</Label>
         <h1>{title}</h1>
         {text && <p>{text}</p>}
@@ -654,54 +666,56 @@ function About({ site }) {
   return (
     <>
       <PageHead
-        label="GIỚI THIỆU"
-        title="Nơi gửi trọn niềm tin."
-        text="Tìm hiểu nền tảng, con người và định hướng của Công ty An Ninh."
-      />
-      <section className="section container about-home">
-        <Photo src={site.team} />
-        <div>
-          <Label>CÂU CHUYỆN AN NINH</Label>
-          <h2>
-            Từ nền tảng nghiệp vụ
+        label="VỀ AN NINH"
+        title={
+          <>
+            Vững nền tảng.
             <br />
-            đến trách nhiệm bảo vệ.
+            <span>Bền niềm tin.</span>
+          </>
+        }
+        text="Hành trình bảo vệ con người và tài sản, bắt đầu từ tinh thần trách nhiệm."
+      />
+      <section className="section container about-layout">
+        <div>
+          <Label>THÀNH LẬP NGÀY {site.founded}</Label>
+          <h2>
+            Từ nền tảng nghiệp vụ,
+            <br />
+            đến sự an toàn mỗi ngày.
           </h2>
           <p>{site.about}</p>
           <div className="founder">
-            <span>DẤU MỐC THÀNH LẬP</span>
-            <strong>{site.founded}</strong>
-            <p>{site.historyNote}</p>
+            <small>NGƯỜI SÁNG LẬP</small>
+            <h3>Ông {site.founder}</h3>
+            <p>Từng là sĩ quan nghiệp vụ trong lực lượng Công an nhân dân.</p>
           </div>
-          <h3>Người sáng lập — Ông {site.founder}</h3>
-          <p>
-            Từng là sĩ quan nghiệp vụ trong lực lượng Công an nhân dân. Tiểu sử
-            chi tiết sẽ được cập nhật khi có tài liệu bổ sung.
-          </p>
         </div>
+        <Photo src={site.team} photo={media.team} />
       </section>
-      <section className="section cream">
+      <section className="principles-section">
         <div className="container">
-          <SectionTitle
-            label="ĐỊNH HƯỚNG"
-            title="Gìn giữ an toàn bằng trách nhiệm."
-          />
-          <div className="values">
+          <Label>ĐIỀU CHÚNG TÔI THEO ĐUỔI</Label>
+          <div className="principle-grid">
             {[
               [
-                "Sứ mệnh",
-                "Bảo vệ tính mạng, tài sản của đơn vị, doanh nghiệp và cá nhân; góp phần giữ gìn trật tự, an toàn xã hội.",
+                "01",
+                "Trách nhiệm",
+                "Thực hiện đúng nhiệm vụ, đặt sự an toàn của con người và tài sản trong từng công việc.",
               ],
               [
-                "Định hướng",
-                "Đồng hành với nhu cầu bảo đảm an ninh của khách hàng trong quá trình phát triển kinh tế.",
+                "02",
+                "Kỷ luật",
+                "Rèn luyện tác phong, tuân thủ nội quy và duy trì việc bàn giao, báo cáo ca trực.",
               ],
               [
-                "Giá trị cốt lõi",
-                "Trách nhiệm trong công việc. Kỷ luật trong tác phong. Rõ ràng trong phối hợp.",
+                "03",
+                "Phối hợp",
+                "Thống nhất đầu mối, trao đổi rõ ràng và phối hợp theo phương án của đơn vị.",
               ],
-            ].map(([t, d]) => (
-              <article key={t}>
+            ].map(([n, t, d]) => (
+              <article key={n}>
+                <span>{n}</span>
                 <h3>{t}</h3>
                 <p>{d}</p>
               </article>
@@ -709,106 +723,125 @@ function About({ site }) {
           </div>
         </div>
       </section>
-      <section id="nang-luc" className="section container training">
+      <section id="nang-luc" className="section container training-layout">
+        <Photo src={site.training} photo={media.training} />
         <div>
-          <Label>HỒ SƠ NĂNG LỰC</Label>
+          <Label>NĂNG LỰC ĐỘI NGŨ</Label>
           <h2>
-            Con người &<br />
-            hoạt động đào tạo.
+            Rèn kỹ năng.
+            <br />
+            Vững tác phong.
           </h2>
           <p>
-            Hình ảnh hồ sơ được cung cấp ghi nhận đội ngũ nhân viên, hoạt động
-            đào tạo nghiệp vụ, võ thuật, PCCC, sơ cấp cứu và tập huấn ứng xử tại
-            cơ sở y tế.
+            Hồ sơ công ty ghi nhận hoạt động đào tạo nghiệp vụ bảo vệ, võ thuật,
+            phòng cháy chữa cháy, sơ cấp cứu và tập huấn ứng xử tại cơ sở y tế.
           </p>
           <ul className="checklist">
-            <li>
-              <Check />
-              Huấn luyện nghiệp vụ và tác phong bảo vệ.
-            </li>
-            <li>
-              <Check />
-              Rèn luyện kỹ năng ứng phó tình huống.
-            </li>
-            <li>
-              <Check />
-              Trang bị bộ đàm và công cụ hỗ trợ theo hồ sơ.
-            </li>
+            {[
+              "Nghiệp vụ bảo vệ và kiểm soát mục tiêu",
+              "Phối hợp xử lý các tình huống phát sinh",
+              "Kỹ năng PCCC, sơ cấp cứu và ứng xử",
+            ].map((t) => (
+              <li key={t}>
+                <Check />
+                {t}
+              </li>
+            ))}
           </ul>
-          <p className="muted">
-            Các giấy khen và hình ảnh mục tiêu trong hồ sơ là tài liệu lịch sử,
-            không đại diện cho danh sách khách hàng hoặc tình trạng giấy phép
-            hiện tại.
+        </div>
+      </section>
+      <section id="hinh-anh" className="section gallery-section">
+        <div className="container">
+          <SectionTitle
+            label="THƯ VIỆN HÌNH ẢNH"
+            title="Những hình ảnh kể câu chuyện An Ninh."
+          >
+            Đội ngũ, đào tạo và hoạt động qua các thời kỳ. Chọn ảnh để xem lớn.
+          </SectionTitle>
+          <ActivityGallery />
+          <p className="archive-note">
+            Các hình ảnh mục tiêu và ghi nhận trong hồ sơ phản ánh hoạt động tại
+            thời điểm ghi hình.
           </p>
         </div>
-        <Photo src={site.training} type="training" />
       </section>
       <ConsultCTA />
     </>
   );
 }
 function Services({ site }) {
-  let [q, setQ] = useState("");
+  const [q, setQ] = useState("");
+  const found = services.filter((s) =>
+    s.title.toLocaleLowerCase("vi").includes(q.toLocaleLowerCase("vi")),
+  );
   return (
     <>
       <PageHead
         label="DỊCH VỤ BẢO VỆ"
-        title="Hiểu mục tiêu. Đúng phương án."
-        text="Các nhóm mục tiêu được ghi nhận trong hồ sơ năng lực doanh nghiệp. Phạm vi triển khai cụ thể được thống nhất sau khảo sát."
+        title={
+          <>
+            Mỗi mục tiêu.
+            <br />
+            <span>Một phương án riêng.</span>
+          </>
+        }
+        text="Từ văn phòng, nhà máy đến ngân hàng và cơ sở y tế. Cùng xây dựng phương án bảo vệ phù hợp với cách đơn vị của bạn vận hành."
       />
       <section className="section container">
         <SearchBox
           value={q}
           onChange={setQ}
-          placeholder="Tìm dịch vụ bảo vệ…"
+          placeholder="Tìm lĩnh vực bảo vệ…"
         />
-        <div className="service-grid">
-          {services
-            .filter((s) => s.title.toLowerCase().includes(q.toLowerCase()))
-            .map((s, i) => (
-              <a
-                className="service-card"
-                key={s.slug}
-                href={"/dich-vu/" + s.slug}
-              >
-                {site[
-                  serviceImageKeys[services.findIndex((x) => x.slug === s.slug)]
-                ] && (
-                  <img
-                    className="service-thumb"
-                    src={
-                      site[
-                        serviceImageKeys[
-                          services.findIndex((x) => x.slug === s.slug)
-                        ]
-                      ]
-                    }
-                    alt={s.title}
-                  />
-                )}
-                <div className="service-top">
-                  <s.icon size={42} />
-                  <span>0{i + 1}</span>
-                </div>
-                <h3>{s.title}</h3>
-                <p>{s.desc}</p>
-                <span className="text-link">
-                  Xem chi tiết <ArrowUpRight size={18} />
-                </span>
-              </a>
-            ))}
-        </div>
-        {!services.some((s) =>
-          s.title.toLowerCase().includes(q.toLowerCase()),
-        ) && (
+        <ServiceCards site={site} items={found} />
+        {!found.length && (
           <Empty
-            title="Không tìm thấy dịch vụ"
-            text="Thử từ khóa khác hoặc gửi yêu cầu tư vấn."
+            title="Chưa tìm thấy dịch vụ phù hợp"
+            text="Thử từ khóa khác hoặc gửi nhu cầu để chúng tôi tiếp nhận."
           />
         )}
       </section>
+      <Process />
       <ConsultCTA />
     </>
+  );
+}
+function Process() {
+  return (
+    <section className="process-section">
+      <div className="container">
+        <SectionTitle
+          label="CÁCH CHÚNG TÔI ĐỒNG HÀNH"
+          title="Rõ ràng từ bước đầu tiên."
+        />
+        <div className="process-grid">
+          {[
+            [
+              "Lắng nghe",
+              "Tiếp nhận nhu cầu, địa điểm và thời gian cần bảo vệ.",
+            ],
+            [
+              "Khảo sát",
+              "Tìm hiểu mặt bằng, luồng di chuyển và các yêu cầu phối hợp.",
+            ],
+            [
+              "Thống nhất",
+              "Xây dựng phương án, nhân sự, ca trực và phạm vi nhiệm vụ.",
+            ],
+            [
+              "Triển khai",
+              "Bố trí lực lượng, bàn giao, giám sát và điều chỉnh theo thực tế.",
+            ],
+          ].map(([t, d], i) => (
+            <article key={t}>
+              <span>0{i + 1}</span>
+              <h3>{t}</h3>
+              <p>{d}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 function ServiceDetail({ slug, site }) {
@@ -819,17 +852,11 @@ function ServiceDetail({ slug, site }) {
       <PageHead label="DỊCH VỤ BẢO VỆ" title={s.title} text={s.desc} />
       <section className="section container detail-layout">
         <article>
-          {site[serviceImageKeys[services.indexOf(s)]] && (
-            <img
-              className="service-detail-image"
-              src={site[serviceImageKeys[services.indexOf(s)]]}
-              alt={s.title}
-            />
-          )}
-          <div className="service-symbol">
-            <s.icon size={80} strokeWidth={1} />
-            <span>{s.title}</span>
-          </div>
+          <Photo
+            src={site[serviceImageKeys[services.indexOf(s)]]}
+            photo={serviceMedia[services.indexOf(s)]}
+            className="service-detail-image"
+          />
           <h2>Phạm vi công việc dự kiến</h2>
           <p>
             Phương án bảo vệ được xây dựng sau khi tìm hiểu mặt bằng, thời gian
@@ -1004,15 +1031,19 @@ function News() {
               <PostCard key={p.id} post={p} />
             ))}
           </div>
-        ) : (
+        ) : q || cat ? (
           <Empty
-            title={
-              q || cat
-                ? "Không có bài viết phù hợp"
-                : "Tin tức đang được cập nhật"
-            }
-            text="Các bài viết đã xuất bản sẽ xuất hiện tại đây."
+            title="Không có bài viết phù hợp"
+            text="Thử từ khóa hoặc danh mục khác."
           />
+        ) : (
+          <>
+            <SectionTitle
+              label="HÌNH ẢNH TỪ HỒ SƠ CÔNG TY"
+              title="Hoạt động & con người An Ninh."
+            />
+            <ActivityGallery />
+          </>
         )}
         <Pager page={page} pages={data?.pages || 0} onChange={setPage} />
       </section>
@@ -1094,77 +1125,346 @@ function Post({ slug }) {
     </>
   );
 }
-function Careers() {
-  let [data, setData] = useState(null),
-    [q, setQ] = useState(""),
-    [page, setPage] = useState(1),
-    [err, setErr] = useState("");
+function Careers({ site }) {
+  const [data, setData] = useState(null),
+    [err, setErr] = useState(""),
+    [page, setPage] = useState(1);
   useEffect(() => {
-    api("/jobs?q=" + encodeURIComponent(q) + "&page=" + page)
-      .then(setData)
-      .catch((e) => setErr(e.message));
-  }, [q, page]);
+    let active = true;
+    setErr("");
+    api("/jobs?status=open&page=" + page)
+      .then((d) => active && setData(d))
+      .catch((e) => active && setErr(e.message));
+    return () => {
+      active = false;
+    };
+  }, [page]);
+  const jobs = data?.items.filter((j) => j.status === "open") || [];
   return (
     <>
-      <PageHead
-        label="TUYỂN DỤNG"
-        title="Một công việc. Một trách nhiệm."
-        text="Tìm hiểu công việc, yêu cầu và quyền lợi trước khi gửi hồ sơ đến An Ninh."
-      />
-      <section className="section container">
-        <div className="career-intro">
-          <Users size={42} strokeWidth={1} />
-          <div>
-            <h2>Gia nhập đội ngũ An Ninh</h2>
-            <p>
-              Các thông báo tuyển dụng chính thức được cập nhật tại đây. Công ty
-              chưa công bố mức lương hoặc chế độ cho vị trí nào thì website sẽ
-              không tự đưa ra cam kết.
-            </p>
+      <section className="careers-hero container">
+        <div>
+          <Label>GIA NHẬP ĐỘI NGŨ AN NINH</Label>
+          <h1>
+            Bắt đầu công việc.
+            <br />
+            <span>
+              Gắn bó bằng
+              <br />
+              trách nhiệm.
+            </span>
+          </h1>
+          <p>
+            Bạn mong muốn làm việc trong lĩnh vực bảo vệ? Tìm hiểu công việc và
+            gửi thông tin để An Ninh trao đổi cơ hội phù hợp với bạn.
+          </p>
+          <Button href="/tuyen-dung#dang-ky">
+            Đăng ký ứng tuyển <span className="sr-only">vào An Ninh</span>
+          </Button>
+          <div className="career-tags">
+            <span>Nghiệp vụ bảo vệ</span>
+            <span>Tác phong kỷ luật</span>
+            <span>Tinh thần đồng đội</span>
           </div>
         </div>
-        <SearchBox
-          value={q}
-          onChange={(v) => {
-            setQ(v);
-            setPage(1);
-          }}
-          placeholder="Tìm vị trí hoặc địa điểm làm việc…"
+        <div className="careers-visual">
+          <Photo src={site.training} photo={media.training} eager />
+          <span>CON NGƯỜI LÀ NỀN TẢNG CỦA AN NINH</span>
+        </div>
+      </section>
+      <section className="section career-content">
+        <div className="container">
+          <SectionTitle
+            label="TÌM HIỂU TRƯỚC KHI ỨNG TUYỂN"
+            title="Công việc của người bảo vệ."
+          />
+          <div className="career-info-grid">
+            <article>
+              <ShieldCheck />
+              <h3>Bạn sẽ làm gì?</h3>
+              <ul>
+                <li>
+                  Kiểm soát người, phương tiện ra vào theo nội quy mục tiêu.
+                </li>
+                <li>Tuần tra, quan sát và báo cáo các dấu hiệu bất thường.</li>
+                <li>
+                  Hướng dẫn khách, giữ gìn trật tự và phối hợp với đơn vị.
+                </li>
+                <li>
+                  Ghi chép, bàn giao ca và thực hiện nhiệm vụ được phân công.
+                </li>
+              </ul>
+            </article>
+            <article>
+              <Users />
+              <h3>Điều gì cần ở bạn?</h3>
+              <ul>
+                <li>Trung thực, có trách nhiệm và chấp hành kỷ luật.</li>
+                <li>
+                  Sức khỏe phù hợp với công việc và ca trực được thống nhất.
+                </li>
+                <li>
+                  Tác phong lịch sự, biết lắng nghe và phối hợp cùng đồng đội.
+                </li>
+                <li>
+                  Nếu chưa có kinh nghiệm, hãy chia sẻ rõ khi đăng ký để được tư
+                  vấn.
+                </li>
+              </ul>
+            </article>
+            <article>
+              <Briefcase />
+              <h3>Thu nhập & quyền lợi</h3>
+              <ul>
+                <li>
+                  Mức lương, phụ cấp và lịch làm việc được trao đổi theo vị trí,
+                  mục tiêu.
+                </li>
+                <li>
+                  Các chế độ hợp đồng, bảo hiểm và nghỉ phép được làm rõ khi
+                  phỏng vấn theo quy định áp dụng.
+                </li>
+                <li>
+                  Nội dung hướng dẫn nghiệp vụ và yêu cầu trang phục được trao
+                  đổi trước khi nhận việc.
+                </li>
+              </ul>
+              <p className="muted">
+                Hãy hỏi rõ những nội dung bạn quan tâm trước khi đồng ý nhận
+                việc.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section className="section container job-section">
+        <SectionTitle
+          label="CƠ HỘI NGHỀ NGHIỆP"
+          title="Tìm công việc phù hợp với bạn."
         />
         {err && <Notice error>{err}</Notice>}
-        {data?.items.length ? (
+        {!data && !err ? (
+          <p role="status">Đang tải thông tin tuyển dụng…</p>
+        ) : jobs.length ? (
           <div className="job-list">
-            {data.items.map((j) => (
-              <a href={"/tuyen-dung/" + j.slug} key={j.id}>
+            {jobs.map((j) => (
+              <a key={j.id} href={`/tuyen-dung/${j.slug}`}>
                 <div>
-                  <span
-                    className={"badge " + (j.status === "open" ? "green" : "")}
-                  >
-                    {j.status === "open" ? "Đang tuyển" : "Đã đóng"}
-                  </span>
+                  <span className="badge green">Đang nhận hồ sơ</span>
                   <h3>{j.title}</h3>
                   <p>
                     <MapPin size={16} />
-                    {j.location} <Clock size={16} />
+                    {j.location}
+                    <Clock size={16} />
                     {j.schedule}
                   </p>
                 </div>
                 <span>
-                  {j.salary || "Lương: chưa công bố"}
+                  {j.salary || "Thu nhập trao đổi khi phỏng vấn"}
                   <ArrowUpRight size={24} />
                 </span>
               </a>
             ))}
           </div>
         ) : (
-          <Empty
-            title="Chưa có thông báo tuyển dụng"
-            text="Vui lòng quay lại để xem các vị trí được công ty công bố."
-          />
+          !err && (
+            <div className="talent-callout">
+              <div className="talent-icon">
+                <FileText size={30} />
+              </div>
+              <div>
+                <h3>Chưa thấy vị trí phù hợp? Vẫn có thể gửi hồ sơ.</h3>
+                <p>
+                  Hiện chưa có đợt tuyển dụng đang mở trên website. An Ninh tiếp
+                  nhận thông tin để liên hệ khi có nhu cầu phù hợp với khu vực
+                  và thời gian làm việc của bạn.
+                </p>
+              </div>
+              <a className="text-link" href="/tuyen-dung#dang-ky">
+                Để lại thông tin <ArrowRight size={18} />
+              </a>
+            </div>
+          )
         )}
         <Pager page={page} pages={data?.pages || 0} onChange={setPage} />
       </section>
+      <section className="application-section" id="dang-ky">
+        <div className="container application-layout">
+          <div>
+            <Label>ĐĂNG KÝ ỨNG TUYỂN</Label>
+            <h2>
+              Cho chúng tôi
+              <br />
+              biết về bạn.
+            </h2>
+            <p>
+              Chỉ cần để lại thông tin liên hệ, khu vực mong muốn và vài dòng
+              giới thiệu. Bạn có thể đính kèm CV nếu đã chuẩn bị.
+            </p>
+            <ol className="application-steps">
+              <li>
+                <span>01</span>
+                <div>
+                  <strong>Gửi thông tin</strong>
+                  <p>Điền biểu mẫu ngay bên cạnh.</p>
+                </div>
+              </li>
+              <li>
+                <span>02</span>
+                <div>
+                  <strong>Trao đổi công việc</strong>
+                  <p>
+                    Bộ phận tuyển dụng xem xét và liên hệ khi có nhu cầu phù
+                    hợp.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <span>03</span>
+                <div>
+                  <strong>Hoàn thiện hồ sơ</strong>
+                  <p>
+                    Trao đổi rõ vị trí, ca trực, thu nhập và giấy tờ cần chuẩn
+                    bị.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </div>
+          <QuickApplication />
+        </div>
+      </section>
+      <section className="section container career-faq">
+        <SectionTitle
+          label="BẠN CÓ THỂ QUAN TÂM"
+          title="Một vài điều trước khi bắt đầu."
+        />
+        {[
+          [
+            "Chưa có kinh nghiệm có thể đăng ký không?",
+            "Bạn có thể để lại thông tin và ghi rõ chưa có kinh nghiệm. Bộ phận tuyển dụng sẽ trao đổi yêu cầu của công việc khi có nhu cầu phù hợp.",
+          ],
+          [
+            "Tôi cần chuẩn bị hồ sơ gì?",
+            "Khi đăng ký trực tuyến, bạn chỉ cần thông tin liên hệ và giới thiệu ngắn. CV là tùy chọn. Các giấy tờ bổ sung sẽ được hướng dẫn khi trao đổi công việc.",
+          ],
+          [
+            "Tôi có thể chọn khu vực và ca làm việc không?",
+            "Hãy ghi khu vực, thời gian và ca làm việc mong muốn trong biểu mẫu. Việc bố trí được trao đổi theo nhu cầu của từng mục tiêu.",
+          ],
+          [
+            "Gửi hồ sơ có nghĩa là đã được nhận việc không?",
+            "Biểu mẫu là bước đăng ký nguyện vọng. Kết quả tuyển dụng và thời điểm nhận việc được trao đổi sau khi xem xét hồ sơ và phỏng vấn.",
+          ],
+        ].map(([q, a]) => (
+          <details key={q}>
+            <summary>
+              {q}
+              <Plus size={19} />
+            </summary>
+            <p>{a}</p>
+          </details>
+        ))}
+      </section>
     </>
+  );
+}
+function QuickApplication() {
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState(""),
+    [success, setSuccess] = useState("");
+  async function submit(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const d = new FormData(form);
+    if (d.get("file")?.size > 5 * 1024 * 1024) {
+      setError("CV vượt quá 5 MB. Vui lòng chọn tệp nhỏ hơn.");
+      return;
+    }
+    if (!d.get("file")?.size) d.delete("file");
+    d.set("consent", "true");
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api("/applications", { method: "POST", body: d });
+      setSuccess(
+        `Đã tiếp nhận đăng ký của bạn. Mã hồ sơ: ${r.id.slice(0, 8)}. An Ninh sẽ liên hệ khi có nhu cầu phù hợp.`,
+      );
+      form.reset();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="form-panel quick-application">
+      <h3>Thông tin ứng tuyển</h3>
+      <p>Các trường có dấu * là bắt buộc.</p>
+      {error && <Notice error>{error}</Notice>}
+      {success ? (
+        <>
+          <Notice>{success}</Notice>
+          <button onClick={() => setSuccess("")}>Gửi đăng ký khác</button>
+        </>
+      ) : (
+        <form onSubmit={submit}>
+          <div className="form-grid">
+            <Field
+              label="Họ và tên"
+              name="name"
+              required
+              autoComplete="name"
+              maxLength={120}
+            />
+            <Field
+              label="Số điện thoại"
+              name="phone"
+              type="tel"
+              required
+              autoComplete="tel"
+              pattern="(\+84|0)[0-9 .\-]{8,13}"
+            />
+            <Field
+              label="Email (nếu có)"
+              name="email"
+              type="email"
+              autoComplete="email"
+            />
+            <Field
+              label="Khu vực mong muốn làm việc"
+              name="location"
+              required
+              placeholder="Ví dụ: Đà Nẵng, Tam Kỳ…"
+            />
+            <Field
+              label="Thời gian / ca làm việc mong muốn"
+              name="availability"
+              wide
+              placeholder="Ví dụ: ca ngày, có thể bắt đầu từ…"
+            />
+            <Field label="Giới thiệu & kinh nghiệm" required wide>
+              <textarea
+                name="intro"
+                required
+                rows={4}
+                maxLength={10000}
+                placeholder="Chia sẻ kinh nghiệm, kỹ năng hoặc ghi rõ nếu bạn chưa từng làm bảo vệ…"
+              />
+            </Field>
+            <Field label="CV đính kèm (không bắt buộc)" wide>
+              <input type="file" name="file" accept=".pdf,.doc,.docx" />
+              <small>PDF, DOC, DOCX · tối đa 5 MB.</small>
+            </Field>
+          </div>
+          <Consent />
+          <button className="button" disabled={busy}>
+            {busy ? "Đang gửi đăng ký…" : "Gửi đăng ký ứng tuyển"}
+            <ArrowUpRight size={18} />
+          </button>
+        </form>
+      )}
+    </div>
   );
 }
 function Field({
@@ -1626,11 +1926,11 @@ function ConsultCTA() {
     <section className="consult-cta">
       <div className="container">
         <div>
-          <Label>TƯ VẤN DỊCH VỤ BẢO VỆ</Label>
-          <h2>Bạn đang cần một phương án bảo vệ?</h2>
-          <p>Chia sẻ nhu cầu để bắt đầu trao đổi về mục tiêu của bạn.</p>
+          <Label>CÙNG BẠN GIỮ GÌN SỰ AN TOÀN</Label>
+          <h2>Bắt đầu bằng một cuộc trao đổi.</h2>
+          <p>Chia sẻ nhu cầu. Cùng tìm phương án bảo vệ phù hợp.</p>
         </div>
-        <Button href="/lien-he">Trao đổi với An Ninh</Button>
+        <Button href="/lien-he">Kết nối với An Ninh</Button>
       </div>
     </section>
   );
@@ -1640,45 +1940,43 @@ function Footer({ site }) {
     <footer>
       <div className="container footer-grid">
         <div>
-          <a className="brand" href="/">
-            <ShieldCheck size={38} />
-            <span>
-              <strong>{site.shortName}</strong>
-              <small>SECURITY SERVICE</small>
-            </span>
-          </a>
+          <Brand site={site} />
           <p>{site.name}</p>
-          <p>{site.tagline}</p>
-          <small>Thành lập ngày {site.founded}</small>
+          <span className="footer-tagline">Nơi gửi trọn niềm tin.</span>
         </div>
         <div>
-          <h4>Tìm hiểu</h4>
-          <a href="/gioi-thieu">Giới thiệu & năng lực</a>
-          <a href="/dich-vu">Dịch vụ bảo vệ</a>
+          <h4>Khám phá An Ninh</h4>
+          <a href="/gioi-thieu">Về chúng tôi</a>
+          <a href="/dich-vu">Giải pháp bảo vệ</a>
+          <a href="/gioi-thieu#hinh-anh">Thư viện hình ảnh</a>
           <a href="/tin-tuc">Tin tức & hoạt động</a>
-          <a href="/tuyen-dung">Cơ hội nghề nghiệp</a>
         </div>
         <div>
-          <h4>Liên hệ</h4>
-          <p>{site.address || "Địa chỉ: đang cập nhật"}</p>
+          <h4>Kết nối</h4>
+          <a href="/lien-he">
+            Liên hệ tư vấn <ArrowUpRight size={15} />
+          </a>
+          <a href="/tuyen-dung">
+            Gia nhập An Ninh <ArrowUpRight size={15} />
+          </a>
           {site.hotline || site.phone ? (
-            <a href={"tel:" + (site.hotline || site.phone)}>
+            <a href={`tel:${site.hotline || site.phone}`}>
               {site.hotline || site.phone}
             </a>
-          ) : (
-            <p>Điện thoại: đang cập nhật</p>
-          )}
-          {site.email && <a href={"mailto:" + site.email}>{site.email}</a>}
+          ) : null}
+          {site.email && <a href={`mailto:${site.email}`}>{site.email}</a>}
+          {site.address && <p>{site.address}</p>}
           {site.facebook && (
             <a href={site.facebook} target="_blank" rel="noreferrer">
               Facebook ↗
             </a>
           )}
-          <p>{site.footer}</p>
         </div>
       </div>
       <div className="container footer-bottom">
-        <span>© {new Date().getFullYear()} An Ninh. Bảo lưu mọi quyền.</span>
+        <span>
+          © {new Date().getFullYear()} An Ninh · Thành lập {site.founded}
+        </span>
         <div>
           <a href="/bao-mat">Chính sách bảo mật</a>
           <a href="/admin">Quản trị</a>
@@ -2553,7 +2851,7 @@ function Inbox({ type, reload }) {
         .toLowerCase()
         .includes(q.toLowerCase()) &&
       (!status || r.status === status) &&
-      (!job || r.job_id === job) &&
+      (!job || (r.job_id || "general") === job) &&
       (!from || r.created_at.slice(0, 10) >= from) &&
       (!to || r.created_at.slice(0, 10) <= to),
   );
@@ -2593,7 +2891,9 @@ function Inbox({ type, reload }) {
       setErr(e.message);
     }
   }
-  let jobs = [...new Map(rows.map((r) => [r.job_id, r.job_title])).entries()];
+  let jobs = [
+    ...new Map(rows.map((r) => [r.job_id || "general", r.job_title])).entries(),
+  ];
   return (
     <>
       {err && <Notice error>{err}</Notice>}
@@ -2753,6 +3053,7 @@ function Inbox({ type, reload }) {
                       address: "Địa chỉ",
                       education: "Học vấn",
                       experience: "Kinh nghiệm",
+                      availability: "Thời gian mong muốn",
                       intro: "Giới thiệu",
                     }[k] || k}
                   </dt>

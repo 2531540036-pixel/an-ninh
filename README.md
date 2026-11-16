@@ -14,6 +14,15 @@ Tài khoản Admin được tạo riêng lần đầu, nằm trong tệp `data/a
 
 Nếu cần khởi chạy lại trong Codespace, mở Terminal và chạy `bash .devcontainer/start.sh`.
 
+Để cập nhật Codespace đã mở sang giao diện mới:
+
+```bash
+git pull
+bash .devcontainer/reload.sh
+```
+
+Lệnh reload build lại giao diện và khởi động lại đúng máy chủ của kho này, giữ database và hồ sơ đã nhận. Sau đó mở tab **PORTS → 3000 → Open in Browser**.
+
 ## Chạy bản bàn giao
 
 Cần Node.js **24 trở lên** và npm.
@@ -65,7 +74,7 @@ Các đường dẫn tương đối tính từ thư mục chạy lệnh; hãy ch
 1. Vào `/admin`, đăng nhập và đổi mật khẩu tạm.
 2. **Thông tin công ty**: xác nhận tên, số điện thoại, email, địa chỉ và mạng xã hội. Để trống thông tin chưa xác nhận. Tải logo, banner, ảnh đội ngũ, huấn luyện và ảnh theo dịch vụ; nhấn **Lưu thông tin công ty**. Chấp nhận JPG, PNG, WEBP, tối đa 5 MB. Logo giữ nguyên tỉ lệ. Nên chuẩn bị ảnh ngang tối ưu trước khi upload.
 3. **Tin tức**: tạo bài, chọn danh mục, ảnh đại diện; nhập nội dung. Trình soạn thảo hỗ trợ tiêu đề phụ, danh sách, chèn ảnh và xem trước. Nội dung dạng văn bản có cấu trúc; không thực thi HTML. Chọn **Xuất bản** để công khai, **Bản nháp** để soạn tiếp, **Ẩn** để gỡ khỏi trang tin.
-4. **Vị trí tuyển dụng**: nhập mô tả, yêu cầu, quyền lợi, nơi làm việc, ca trực và số lượng. Mức lương để trống nếu chưa công bố. Chỉ vị trí **Mở tuyển dụng** nhận được hồ sơ. Vị trí đóng vẫn có trang để người đọc biết đã ngừng tiếp nhận.
+4. **Vị trí tuyển dụng**: nhập mô tả, yêu cầu, quyền lợi, nơi làm việc, ca trực và số lượng. Mức lương để trống nếu chưa công bố. Vị trí **Mở tuyển dụng** nhận hồ sơ theo tin tuyển dụng. Trang tuyển dụng còn có biểu mẫu **Đăng ký ứng tuyển chung**, hoạt động ngay cả khi chưa có vị trí mở; CV/email là tùy chọn. Vị trí đóng vẫn có trang để người đọc biết đã ngừng tiếp nhận.
 5. **Yêu cầu tư vấn / Hồ sơ ứng tuyển**: tìm kiếm, lọc, xem chi tiết, cập nhật trạng thái và ghi chú nội bộ. File ứng viên tải qua API có đăng nhập, không có URL tải công khai.
 6. Vị trí đã có hồ sơ không được xóa trực tiếp để tránh mất liên kết lịch sử: đóng tuyển dụng, hoặc xóa các hồ sơ liên quan trước khi xóa vị trí.
 
@@ -74,7 +83,10 @@ Bản đồ: nhập liên kết HTTPS Google Maps. Nếu là `https://www.google
 ## Cấu trúc mã nguồn
 
 - `src/main.jsx`: React, trang khách hàng, form và quản trị.
-- `src/style.css`: thiết kế responsive, màu thương hiệu và giao diện Admin.
+- `src/style.css`, `src/admin.css`: giao diện công khai mới và quản trị.
+- `src/Photo.jsx`, `src/company-media.js`: hiển thị vùng ảnh thật từ hồ sơ, thư viện ảnh có xem lớn.
+- `public/company-images/`: 6 tệp ảnh hoạt động gốc được chọn từ hai ZIP.
+- `public/fonts/`: font Manrope hỗ trợ tiếng Việt, lưu cùng website và kèm giấy phép OFL.
 - `server.mjs`: HTTP API, phiên đăng nhập, kiểm tra đầu vào, upload, bảo vệ file và metadata SEO.
 - `db.mjs`: mở SQLite và cấu hình mặc định có nguồn.
 - `schema.sql`: schema và chỉ mục database.
@@ -122,6 +134,6 @@ Không dùng hosting static-only cho bản Full-stack này. Nền tảng serverl
 - Có mã nguồn thực thi, schema khởi tạo database, API và chức năng quản trị đã kiểm thử HTTP. Database và tài khoản được tạo riêng trên máy chạy ứng dụng.
 - Chưa có URL triển khai cố định. Đã có cấu hình Codespaces để người dùng tự khởi chạy và xem website trong tài khoản GitHub; chưa tự tạo hoặc kiểm thử Codespace trên tài khoản người dùng.
 - Chưa kiểm thử UI bằng trình duyệt, chưa có screenshot: công cụ `cua_repl.js` của managed preview không được cung cấp. Build thành công không đồng nghĩa đã kiểm chứng hiển thị trên điện thoại.
-- Ảnh được gửi trong chat đã dùng để phân tích, nhưng không có tệp ảnh trong filesystem/download pointer để nhúng vào mã nguồn. Không lấy ảnh người bảo vệ giả. Các vùng ảnh hiện ghi rõ chờ ảnh gốc; tải ảnh thật qua Admin để thay thế. Biểu tượng khi chưa có logo là ký hiệu giao diện tạm, không phải logo công ty được dựng lại.
+- Đã tích hợp ảnh hoạt động thật từ hai ZIP: logo trên bìa hồ sơ, đội ngũ, huấn luyện, PCCC, sơ cấp cứu, mục tiêu và hoạt động ghi nhận. Ảnh gốc được giữ nguyên; SVG viewports chọn vùng hiển thị và xoay trên giao diện. Ảnh Admin tải lên vẫn được ưu tiên. Không đưa sổ BHXH, thẻ nhân viên, bảng ngày sinh, giấy tờ cá nhân hay mẫu dấu vào kho công khai.
 - Ngày thành lập **25/6/2006** và người sáng lập **ông Nguyễn Duy Tư**, từng là sĩ quan nghiệp vụ trong lực lượng CAND, theo thông tin người dùng cung cấp. Tiểu sử chi tiết chờ bổ sung. Không tự đồng nhất ngày thành lập do người dùng cung cấp với ngày đăng ký trên giấy tờ.
 - Không tự công bố thông tin liên hệ cũ, số liệu thành tích, hợp đồng hiện hành, mức lương hay đợt tuyển dụng. Các thông tin này cần doanh nghiệp xác nhận và nhập qua Admin.

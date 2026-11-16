@@ -5,6 +5,21 @@ export const dataDir = resolve(process.env.DATA_DIR || "data");
 mkdirSync(dataDir, { recursive: true, mode: 0o700 });
 export const db = new DatabaseSync(resolve(dataDir, "site.sqlite"));
 db.exec(readFileSync(new URL("./schema.sql", import.meta.url), "utf8"));
+// Preserve existing applications when upgrading databases created before open registrations.
+if (
+  db
+    .prepare("PRAGMA table_info(applications)")
+    .all()
+    .find((c) => c.name === "job_id")?.notnull
+) {
+  db.exec(`BEGIN IMMEDIATE;
+    CREATE TABLE applications_upgrade(id TEXT PRIMARY KEY, job_id TEXT REFERENCES jobs(id), data TEXT NOT NULL, file_id TEXT, status TEXT NOT NULL DEFAULT 'Mới nhận', notes TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
+    INSERT INTO applications_upgrade SELECT * FROM applications;
+    DROP TABLE applications;
+    ALTER TABLE applications_upgrade RENAME TO applications;
+    CREATE INDEX applications_job ON applications(job_id);
+    COMMIT;`);
+}
 export const initialSettings = {
   name: "Công ty Cổ phần Dịch vụ Bảo vệ An Ninh",
   shortName: "AN NINH",

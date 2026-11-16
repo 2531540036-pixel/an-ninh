@@ -6,7 +6,7 @@ Ngày bàn giao: 16/11/2026 (giờ Việt Nam).
 
 `npm run build`: thành công. React/Vite tạo HTML, CSS và JavaScript production, không phụ thuộc CDN frontend.
 
-`npm test`: 11 nhóm kiểm thử tích hợp HTTP. Dùng dữ liệu có nhãn DEMO trong database/tệp tạm; sau kiểm thử được xóa. Không đưa dữ liệu giả vào database vận hành.
+`npm test`: 13 nhóm kiểm thử HTTP và nâng cấp database. Dùng dữ liệu có nhãn DEMO trong database/tệp tạm; sau kiểm thử được xóa. Không đưa dữ liệu giả vào database vận hành.
 
 | Nhóm | Nội dung |
 |---|---|
@@ -18,9 +18,11 @@ Ngày bàn giao: 16/11/2026 (giờ Việt Nam).
 | 06 | Upload PDF; lưu thông tin ứng viên; tải file cần xác thực; URL media công khai bị chặn; ghi chú và trạng thái được lưu |
 | 07 | Từ chối file giả định dạng, file quá 5 MB, ngày sinh sai; đóng vị trí chặn ứng tuyển; bảo toàn liên kết hồ sơ |
 | 08 | Upload ảnh hợp lệ; chặn SVG; chặn đường dẫn ảnh script; sửa cấu hình công ty; kiểm tra nguồn bản đồ |
+| 08b | Đăng ký chung không có vị trí mở; CV/email tùy chọn; kiểm tra trường bắt buộc, đồng ý, email; lưu riêng tư và xóa file |
+| Migration | Nâng cấp database cũ giữ nguyên hồ sơ, trạng thái, ghi chú, tệp và quan hệ vị trí; cho phép đăng ký chung |
 | 09 | Chặn Origin bên ngoài; mở database bằng kết nối khác và tiến trình Node mới vẫn có dữ liệu; đối chiếu thống kê |
 | 10 | Xóa bài/liên hệ/hồ sơ/file/vị trí; đăng xuất chặn truy cập phiên cũ |
-| 11 | HTTP HTML và tệp JS production; title/canonical theo trang; CSP; Admin noindex; sitemap có dịch vụ |
+| 11 | HTTP HTML và JS production; title/canonical; CSP; Admin noindex; sitemap; ảnh JPEG/font thực sự phục vụ đúng MIME và ảnh thiếu trả 404 |
 
 Kết quả chạy thực tế được lưu tại `docs/test-output.txt` trong gói mã nguồn.
 
@@ -29,8 +31,8 @@ Kết quả chạy thực tế được lưu tại `docs/test-output.txt` trong 
 - Không có công cụ `cua_repl.js` nên chưa chạy trình duyệt managed preview, chưa có screenshot trang chính và chưa xác nhận tương tác UI/mobile/keyboard qua trình duyệt thật.
 - CSS đã có breakpoint và giao diện mobile, nhưng không ghi nhận là “đã kiểm thử responsive” chỉ từ việc build thành công.
 - Chưa kiểm thử trên môi trường HTTPS production, email, Zalo hay tên miền công ty vì chưa có cấu hình được xác nhận.
-- Chưa deploy trực tuyến do thiếu script workflow Sites. Không có URL online để báo thành công.
-- Chưa tích hợp tệp ảnh đã gửi trong chat vì không có file local/ID tải ảnh. Các vùng ảnh chờ có nhãn; Admin có upload để hoàn thiện.
+- Mã nguồn và frontend đã build được bàn giao qua GitHub. Chưa có tên miền công ty đang chạy production.
+- Đã tích hợp 6 ảnh nguồn gốc chọn từ hai ZIP, font tự lưu và thư viện ảnh. Các thành phần Home/About/Services/Careers/Header/Footer đã được render kiểm tra bằng React server renderer, không thay thế kiểm tra trực quan qua trình duyệt.
 
 ## Kiểm tra nghiệm thu sau khi chạy trên máy của bạn
 

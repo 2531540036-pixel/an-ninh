@@ -20,7 +20,7 @@ if [[ "$(node --input-type=module -e 'import {db} from "./db.mjs";console.log(db
   printf 'Tài khoản Admin mới được lưu riêng tại %s/admin-first-login.txt\n' "${DATA_DIR:-data}"
 fi
 if ! curl --fail --silent "http://127.0.0.1:${PORT}/api/site" > /dev/null; then
-  nohup npm start > "${DATA_DIR:-data}/server.log" 2>&1 < /dev/null &
+  nohup node server.mjs > "${DATA_DIR:-data}/server.log" 2>&1 < /dev/null &
   printf '%s\n' "$!" > "${DATA_DIR:-data}/server.pid"
 fi
 for attempt in {1..15}; do

@@ -307,6 +307,67 @@ await test("08. Ảnh công khai hợp lệ, chặn SVG và sửa cấu hình c�
     400,
   );
 });
+await test("08b. Đăng ký chung khi không có vị trí: CV/email tùy chọn, dữ liệu riêng tư và xác thực", async () => {
+  assert.equal((await req("/jobs?status=open")).data.total, 0);
+  assert.equal((await req("/jobs?status=closed")).data.total, 1);
+  const make = (overrides = {}, withFile = false) => {
+    const f = new FormData();
+    for (const [k, v] of Object.entries({
+      name: demo.name,
+      phone: demo.phone,
+      location: "DEMO — Đà Nẵng",
+      intro: "DEMO — Chưa có kinh nghiệm",
+      availability: "DEMO — Ca ngày",
+      consent: "true",
+      ...overrides,
+    }))
+      f.set(k, v);
+    if (withFile) f.set("file", new Blob(["%PDF-1.7\nDEMO\n%%EOF"]), "cv.pdf");
+    return f;
+  };
+  const first = await req("/applications", "POST", make());
+  assert.equal(first.status, 201);
+  const row = (await req("/admin/applications")).data.find(
+    (r) => r.id === first.data.id,
+  );
+  assert.equal(row.job_id, null);
+  assert.equal(row.file_id, null);
+  assert.equal(row.data.email, "");
+  assert.equal(row.data.availability, "DEMO — Ca ngày");
+  assert.equal(row.job_title, "Đăng ký ứng tuyển chung");
+  assert.equal(
+    (await req("/admin/applications", "GET", null, false)).status,
+    401,
+  );
+  const second = await req(
+    "/applications",
+    "POST",
+    make({ email: demo.email }, true),
+  );
+  assert.equal(second.status, 201);
+  const withFile = (await req("/admin/applications")).data.find(
+    (r) => r.id === second.data.id,
+  );
+  assert.equal(
+    (await fetch(origin + "/media/" + withFile.file_id)).status,
+    404,
+  );
+  assert.equal(
+    (await req("/applications", "POST", make({ location: "" }))).status,
+    400,
+  );
+  assert.equal(
+    (await req("/applications", "POST", make({ consent: "false" }))).status,
+    400,
+  );
+  assert.equal(
+    (await req("/applications", "POST", make({ email: "bad" }))).status,
+    400,
+  );
+  await req("/admin/applications/" + first.data.id, "DELETE");
+  await req("/admin/applications/" + second.data.id, "DELETE");
+  assert.equal((await req("/admin/files/" + withFile.file_id)).status, 404);
+});
 await test("09. Chống yêu cầu khác nguồn, dữ liệu tồn tại khi mở lại database, thống kê đúng", async () => {
   assert.equal(
     (
@@ -317,8 +378,26 @@ await test("09. Chống yêu cầu khác nguồn, dữ liệu tồn tại khi m�
     403,
   );
   process.env.SITE_URL = "https://anninh-preview.example.test";
-  assert.equal((await req("/admin/settings", "PUT", {tagline: "DEMO — Proxy origin"}, true, {Origin: "https://anninh-preview.example.test"})).status, 200);
-  assert.equal((await req("/admin/settings", "PUT", {tagline: "bad"}, true, {Origin: "https://evil.example"})).status, 403);
+  assert.equal(
+    (
+      await req(
+        "/admin/settings",
+        "PUT",
+        { tagline: "DEMO — Proxy origin" },
+        true,
+        { Origin: "https://anninh-preview.example.test" },
+      )
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await req("/admin/settings", "PUT", { tagline: "bad" }, true, {
+        Origin: "https://evil.example",
+      })
+    ).status,
+    403,
+  );
   delete process.env.SITE_URL;
   let second = new DatabaseSync(join(directory, "site.sqlite"));
   assert.equal(second.prepare("SELECT COUNT(*) n FROM contacts").get().n, 1);
@@ -376,6 +455,15 @@ await test("11. HTML, SEO từng trang, sitemap và các tệp giao diện build
   assert.match(sitemap, /dich-vu\/benh-vien/);
   let svc = await (await fetch(origin + "/dich-vu/ngan-hang")).text();
   assert.match(svc, /<title>Bảo vệ ngân hàng/);
+  const image = await fetch(origin + "/company-images/doi-ngu-an-ninh.jpg");
+  assert.equal(image.status, 200);
+  assert.match(image.headers.get("content-type"), /image\/jpeg/);
+  assert.equal(
+    (await fetch(origin + "/company-images/missing.jpg")).status,
+    404,
+  );
+  const font = await fetch(origin + "/fonts/Manrope-Variable.ttf");
+  assert.equal(font.status, 200);
 });
 
 after(async () => {
