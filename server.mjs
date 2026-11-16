@@ -50,20 +50,45 @@ function requestOrigins(req) {
   const domain =
     process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN || "app.github.dev";
   // Codespaces terminates HTTPS before forwarding to the HTTP server. Derive
-  // its exact public origin from the environment, never from forwarded headers
-  // or a wildcard shared with other users' Codespaces.
+  // its exact public origin from the environment, never a shared wildcard.
   if (
     codespace &&
     /^[a-z0-9-]+$/i.test(codespace) &&
     /^[a-z0-9.-]+$/i.test(domain)
-  )
-    add(`https://${codespace}-${port}.${domain}`);
+  ) {
+    const publicOrigin = new URL(`https://${codespace}-${port}.${domain}`)
+      .origin;
+    add(publicOrigin);
+    // The Codespaces tunnel can rewrite a same-origin browser request's Origin
+    // to localhost while preserving its public Referer and fetch metadata.
+    // Accept that exact loopback port only with same-origin browser evidence.
+    const loopbackOrigins = new Set(
+      ["http:", "https:"].flatMap((protocol) =>
+        ["localhost", "127.0.0.1"].map(
+          (host) => new URL(`${protocol}//${host}:${port}`).origin,
+        ),
+      ),
+    );
+    let refererOrigin;
+    try {
+      refererOrigin = new URL(req.get("referer")).origin;
+    } catch {}
+    if (
+      loopbackOrigins.has(req.get("origin")) &&
+      (refererOrigin === publicOrigin ||
+        req.get("sec-fetch-site") === "same-origin")
+    )
+      add(req.get("origin"));
+  }
   return origins;
 }
 app.use((req, res, next) => {
   if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
     const origin = req.get("origin");
-    if (origin && !requestOrigins(req).has(origin))
+    if (
+      req.get("sec-fetch-site") === "cross-site" ||
+      (origin && !requestOrigins(req).has(origin))
+    )
       return res.status(403).json({ error: "Nguồn yêu cầu không hợp lệ." });
   }
   next();

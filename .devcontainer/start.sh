@@ -25,6 +25,17 @@ if ! curl --fail --silent "http://127.0.0.1:${PORT}/api/site" > /dev/null; then
 fi
 for attempt in {1..15}; do
   if curl --fail --silent "http://127.0.0.1:${PORT}/api/site" > /dev/null; then
+    if [[ -n "${CODESPACE_NAME:-}" ]]; then
+      origin_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+        --request POST --header "Origin: http://localhost:${PORT}" \
+        --header "Referer: ${SITE_URL}/admin" --header 'Sec-Fetch-Site: same-origin' \
+        "http://127.0.0.1:${PORT}/api/admin/logout")"
+      if [[ "$origin_status" != "401" ]]; then
+        printf 'Máy chủ chưa vượt qua kiểm tra đăng nhập qua Codespaces (HTTP %s). Chạy bash .devcontainer/reload.sh rồi thử lại.\n' "$origin_status" >&2
+        exit 1
+      fi
+      printf 'Đã kiểm tra: máy chủ chấp nhận nguồn yêu cầu qua proxy Codespaces.\n'
+    fi
     printf '\nWebsite đã khởi chạy: %s\n' "$SITE_URL"
     printf 'Nếu chưa tự mở, chọn tab PORTS → cổng %s → Open in Browser.\n' "$PORT"
     exit 0

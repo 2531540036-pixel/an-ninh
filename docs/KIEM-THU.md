@@ -6,7 +6,7 @@ Ngày bàn giao: 16/11/2026 (giờ Việt Nam).
 
 `npm run build`: thành công. React/Vite tạo HTML, CSS và JavaScript production, không phụ thuộc CDN frontend.
 
-`npm test`: 18 nhóm kiểm thử HTTP, nâng cấp database và nguồn yêu cầu đăng nhập. Dùng dữ liệu có nhãn DEMO trong database/tệp tạm; sau kiểm thử được xóa. Không đưa dữ liệu giả vào database vận hành.
+`npm test`: 20 nhóm kiểm thử HTTP, nâng cấp database và nguồn yêu cầu đăng nhập. Dùng dữ liệu có nhãn DEMO trong database/tệp tạm; sau kiểm thử được xóa. Không đưa dữ liệu giả vào database vận hành.
 
 | Nhóm | Nội dung |
 |---|---|
@@ -26,7 +26,7 @@ Ngày bàn giao: 16/11/2026 (giờ Việt Nam).
 
 Kết quả chạy thực tế được lưu tại `docs/test-output.txt` trong gói mã nguồn.
 
-Kiểm tra hồi quy lỗi Admin trên Codespaces: đăng nhập thực sự với tài khoản thử nghiệm thành công qua origin HTTPS đúng khi `SITE_URL` cũ là localhost và chưa bật trust proxy; khởi chạy trực tiếp không có `SITE_URL` cũng thành công. Giữ cờ cookie HttpOnly, SameSite=Strict và Secure ở production. Từ chối Codespace khác, sai cổng/giao thức, miền giả, Origin null và header chuyển tiếp giả. Đăng nhập local và tên miền production đã cấu hình tiếp tục hoạt động. Tất cả 18 nhóm qua; chưa truy cập trực tiếp Codespace của người dùng để xác nhận trên trình duyệt.
+Kiểm tra hồi quy lỗi Admin trên Codespaces: đăng nhập thực sự với tài khoản thử nghiệm thành công qua origin HTTPS đúng khi `SITE_URL` cũ là localhost và chưa bật trust proxy; khởi chạy trực tiếp không có `SITE_URL` cũng thành công. Giữ cờ cookie HttpOnly, SameSite=Strict và Secure ở production. Từ chối Codespace khác, sai cổng/giao thức, miền giả, Origin null và header chuyển tiếp giả. Đăng nhập local và tên miền production đã cấu hình tiếp tục hoạt động. Tất cả 20 nhóm qua; chưa truy cập trực tiếp Codespace của người dùng để xác nhận trên trình duyệt.
 
 ## Chưa kiểm chứng
 
@@ -46,3 +46,7 @@ Kiểm tra hồi quy lỗi Admin trên Codespaces: đăng nhập thực sự v�
 6. Tạo bài nháp DEMO; kiểm tra không công khai; xuất bản/sửa/ẩn/xóa và kiểm tra trang tin.
 7. Kiểm tra tìm kiếm, phân trang, menu mobile, nút gọi/Zalo khi đã có số/liên kết xác nhận.
 8. Dừng và khởi động lại Node; kiểm tra dữ liệu còn tồn tại. Xóa dữ liệu DEMO sau nghiệm thu.
+
+## Hồi quy Origin do Codespaces viết lại
+
+Đã tái hiện lỗi trên bản e1cacb1: đăng nhập với Origin `http://localhost:3000` và Referer công khai nhận HTTP 403 dù phép thử với Origin công khai nhận HTTP 200. Sau sửa, cả Origin HTTP/HTTPS localhost qua được đăng nhập và đọc phiên quản trị; cookie production giữ Secure, HttpOnly và SameSite=Strict. Chặn nguồn loopback sai cổng, thiếu bằng chứng cùng nguồn, cross-site và mọi loopback không được cấu hình trong môi trường production thông thường. Đã chạy script startup trong môi trường giả lập Codespaces với database thử độc lập và xác nhận kiểm tra nguồn qua trước khi báo sẵn sàng.

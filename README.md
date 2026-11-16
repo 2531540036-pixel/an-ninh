@@ -71,9 +71,9 @@ Các đường dẫn tương đối tính từ thư mục chạy lệnh; hãy ch
 
 ### Admin báo “Nguồn yêu cầu không hợp lệ” trong Codespaces
 
-Máy chủ nhận thêm đúng origin HTTPS của Codespace hiện tại từ `CODESPACE_NAME`, `PORT` và `GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN` (mặc định `app.github.dev`). Cách này hoạt động cả khi khởi chạy bằng `npm start` hoặc còn cấu hình `SITE_URL` trỏ về localhost. Không chấp nhận wildcard cho các Codespace khác hoặc lấy nguồn tin cậy từ header do client gửi. `SITE_URL` tiếp tục dùng cho tên miền chính thức và metadata.
+Codespaces có thể thay `Origin` của yêu cầu trình duyệt thành `http://localhost:PORT` hoặc `https://localhost:PORT`, trong khi `Referer` vẫn là địa chỉ công khai. Máy chủ xác định đúng origin công khai từ `CODESPACE_NAME`, `PORT` và `GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN` (mặc định `app.github.dev`). Chỉ trong Codespaces, nguồn loopback đúng cổng được chấp nhận khi Referer khớp Codespace công khai hoặc trình duyệt đánh dấu yêu cầu `same-origin`; yêu cầu `cross-site` luôn bị chặn. Không chấp nhận wildcard cho các Codespace khác. `SITE_URL` tiếp tục dùng cho tên miền chính thức và metadata. Tham khảo hành vi proxy: https://github.com/orgs/community/discussions/147513.
 
-Cập nhật mã bằng `git pull origin main`, sau đó chạy `bash .devcontainer/reload.sh`. Mở lại đường dẫn HTTPS ở tab **PORTS → 3000 → Open in Browser**, thêm `/admin` và đăng nhập. Lệnh này giữ nguyên database và tài khoản hiện có.
+Cập nhật mã bằng `git pull origin main`, sau đó chạy `bash .devcontainer/reload.sh`. Mở lại đường dẫn HTTPS ở tab **PORTS → 3000 → Open in Browser**, thêm `/admin` và đăng nhập. Lệnh này giữ nguyên database và tài khoản hiện có. Khi chạy trong Codespaces, máy chủ phải vượt qua phép thử POST với Origin localhost được proxy viết lại trước khi báo khởi động thành công. Phép thử không gửi tài khoản; HTTP 401 là kết quả đúng, cho biết kiểm tra nguồn đã qua và máy chủ yêu cầu đăng nhập.
 
 ## Cập nhật nội dung
 

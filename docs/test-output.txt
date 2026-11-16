@@ -1,18 +1,37 @@
-npm test — node --test tests/*.test.mjs
-Date: 2026-11-16
 
-Original HTTP and migration checks: 13 passed.
-Additional origin regression checks: 5 passed.
+> an-ninh-security@1.0.0 test
+> node --test tests/*.test.mjs
 
-PASS: Direct local HTTP login.
-PASS: Codespaces HTTPS login with stale localhost SITE_URL and no trust proxy; production cookie flags retained.
-PASS: Codespaces HTTPS login with SITE_URL unset.
-PASS: Reject other Codespaces, wrong port/scheme, spoofed domains, null origin and spoofed forwarding headers.
-PASS: Configured production origin remains accepted and other origins are rejected.
-
-tests 18
-pass 18
-fail 0
-cancelled 0
-skipped 0
-todo 0
+✔ 01. Chặn quản trị và tải file khi chưa đăng nhập (115.859632ms)
+✔ 02. Đăng nhập, bắt buộc đổi mật khẩu và kết thúc phiên cũ (205.875459ms)
+✔ 03. Bài viết: nháp, xuất bản, tìm kiếm, sửa, ẩn (25.938145ms)
+✔ 04. Liên hệ: kiểm tra dữ liệu và Admin nhận được thông tin (14.814473ms)
+✔ 05. Tuyển dụng: tạo vị trí và công khai đầy đủ thông tin (4.57021ms)
+✔ 06. Hồ sơ: upload, lưu database, tải riêng tư và cập nhật trạng thái (18.974315ms)
+✔ 07. Từ chối giả mạo file, quá dung lượng, ngày sai và vị trí đã đóng (110.058599ms)
+✔ 08. Ảnh công khai hợp lệ, chặn SVG và sửa cấu hình công ty (11.208284ms)
+✔ 08b. Đăng ký chung khi không có vị trí: CV/email tùy chọn, dữ liệu riêng tư và xác thực (21.564765ms)
+✔ 09. Chống yêu cầu khác nguồn, dữ liệu tồn tại khi mở lại database, thống kê đúng (76.593128ms)
+✔ 10. Xóa bài, liên hệ, hồ sơ, tệp và vị trí; đăng xuất (12.343893ms)
+✔ 11. HTML, SEO từng trang, sitemap và các tệp giao diện build (24.200333ms)
+✔ Nâng cấp database cũ giữ hồ sơ, file, trạng thái và quan hệ vị trí (50.145732ms)
+✔ Đăng nhập HTTP trực tiếp vẫn hoạt động khi không có cấu hình proxy (83.710005ms)
+✔ Codespaces: đăng nhập HTTPS thành công dù SITE_URL cũ là localhost và chưa bật trust proxy (40.703604ms)
+✔ Codespaces: địa chỉ HTTPS đúng được nhận khi khởi chạy trực tiếp, không có SITE_URL (38.386363ms)
+✔ Chặn Codespace khác, sai cổng/giao thức, miền giả, null và header chuyển tiếp giả (14.508087ms)
+✔ Codespaces đổi Origin thành localhost: đăng nhập và đọc phiên thành công với Referer công khai (83.877131ms)
+✔ Nguồn localhost giả, sai cổng, thiếu bằng chứng cùng nguồn và yêu cầu cross-site vẫn bị chặn (4.974411ms)
+✔ Tên miền production đã cấu hình tiếp tục được chấp nhận và chặn nguồn khác (38.899135ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7534.296259
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

@@ -73,12 +73,60 @@ await test("Chặn Codespace khác, sai cổng/giao thức, miền giả, null v
     assert.equal(response.status, 403, origin);
   }
 });
+await test("Codespaces đổi Origin thành localhost: đăng nhập và đọc phiên thành công với Referer công khai", async () => {
+  process.env.CODESPACE_NAME = codespace;
+  process.env.SITE_URL = publicOrigin;
+  process.env.NODE_ENV = "production";
+  for (const rewrittenOrigin of [
+    "http://localhost:3000",
+    "https://localhost:3000",
+  ]) {
+    const response = await login(rewrittenOrigin, {
+      Referer: publicOrigin + "/admin",
+      "Sec-Fetch-Site": "same-origin",
+    });
+    assert.equal(response.status, 200, rewrittenOrigin);
+    const cookie = response.headers.get("set-cookie").split(";")[0];
+    assert.match(response.headers.get("set-cookie"), /Secure/);
+    const me = await fetch(endpoint + "/api/admin/me", {
+      headers: { Cookie: cookie },
+    });
+    assert.equal(me.status, 200);
+    assert.equal((await me.json()).username, "origin-test-admin");
+  }
+});
+await test("Nguồn localhost giả, sai cổng, thiếu bằng chứng cùng nguồn và yêu cầu cross-site vẫn bị chặn", async () => {
+  process.env.CODESPACE_NAME = codespace;
+  process.env.SITE_URL = publicOrigin;
+  for (const [origin, headers] of [
+    [
+      "http://localhost:3001",
+      { Referer: publicOrigin + "/admin", "Sec-Fetch-Site": "same-origin" },
+    ],
+    ["http://localhost:3000", {}],
+    [
+      "http://localhost:3000",
+      { Referer: "https://evil.example/", "Sec-Fetch-Site": "cross-site" },
+    ],
+    [publicOrigin, { "Sec-Fetch-Site": "cross-site" }],
+  ])
+    assert.equal((await login(origin, headers)).status, 403);
+});
 await test("Tên miền production đã cấu hình tiếp tục được chấp nhận và chặn nguồn khác", async () => {
   delete process.env.CODESPACE_NAME;
   process.env.SITE_URL = "https://anninh.example.test";
   assert.equal((await login(process.env.SITE_URL)).status, 200);
   assert.equal((await login(publicOrigin)).status, 403);
   assert.equal((await login("https://evil.example")).status, 403);
+  assert.equal(
+    (
+      await login("http://localhost:3000", {
+        Referer: publicOrigin + "/admin",
+        "Sec-Fetch-Site": "same-origin",
+      })
+    ).status,
+    403,
+  );
 });
 
 after(async () => {
