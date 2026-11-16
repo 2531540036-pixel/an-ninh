@@ -50,3 +50,5 @@ Kiểm tra hồi quy lỗi Admin trên Codespaces: đăng nhập thực sự v�
 ## Hồi quy Origin do Codespaces viết lại
 
 Đã tái hiện lỗi trên bản e1cacb1: đăng nhập với Origin `http://localhost:3000` và Referer công khai nhận HTTP 403 dù phép thử với Origin công khai nhận HTTP 200. Sau sửa, cả Origin HTTP/HTTPS localhost qua được đăng nhập và đọc phiên quản trị; cookie production giữ Secure, HttpOnly và SameSite=Strict. Chặn nguồn loopback sai cổng, thiếu bằng chứng cùng nguồn, cross-site và mọi loopback không được cấu hình trong môi trường production thông thường. Đã chạy script startup trong môi trường giả lập Codespaces với database thử độc lập và xác nhận kiểm tra nguồn qua trước khi báo sẵn sàng.
+
+Đã kiểm tra bổ sung reload khi máy chủ cũ được khởi chạy bằng `npm run dev`: tiến trình cũ được dừng, tiến trình mới được tạo và phép thử nguồn proxy Codespaces qua trước khi báo sẵn sàng.
