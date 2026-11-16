@@ -275,6 +275,15 @@ function Header({ site, path }) {
         Đến nội dung
       </a>
       <header className="site-header">
+        <div className="admin-access-bar">
+          <div className="container admin-access-inner">
+            <span>{site.name}</span>
+            <a className="admin-entry" href="/admin">
+              <LockKeyhole size={18} />
+              Đăng nhập Admin
+            </a>
+          </div>
+        </div>
         <div className="container header-inner">
           <Brand site={site} />
           <nav
@@ -1979,7 +1988,7 @@ function Footer({ site }) {
         </span>
         <div>
           <a href="/bao-mat">Chính sách bảo mật</a>
-          <a href="/admin">Quản trị</a>
+          <a href="/admin">Đăng nhập Admin</a>
         </div>
       </div>
     </footer>
