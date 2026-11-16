@@ -1,0 +1,15 @@
+PRAGMA journal_mode=WAL;
+PRAGMA foreign_keys=ON;
+CREATE TABLE IF NOT EXISTS admins(id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, hash TEXT NOT NULL, salt TEXT NOT NULL, must_change INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY, admin_id INTEGER NOT NULL REFERENCES admins(id), expires INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS attempts(key TEXT PRIMARY KEY, count INTEGER NOT NULL, expires INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY CHECK(id=1), data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS posts(id TEXT PRIMARY KEY, title TEXT NOT NULL, slug TEXT UNIQUE NOT NULL, category TEXT NOT NULL, content TEXT NOT NULL, image TEXT NOT NULL DEFAULT '', status TEXT NOT NULL CHECK(status IN ('draft','published','hidden')), created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY, title TEXT NOT NULL, slug TEXT UNIQUE NOT NULL, location TEXT NOT NULL, salary TEXT NOT NULL, schedule TEXT NOT NULL, quantity INTEGER NOT NULL, description TEXT NOT NULL, requirements TEXT NOT NULL, benefits TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('open','closed')), created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS contacts(id TEXT PRIMARY KEY, data TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Mới', notes TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS applications(id TEXT PRIMARY KEY, job_id TEXT NOT NULL REFERENCES jobs(id), data TEXT NOT NULL, file_id TEXT, status TEXT NOT NULL DEFAULT 'Mới nhận', notes TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS files(id TEXT PRIMARY KEY, disk_name TEXT NOT NULL UNIQUE, original_name TEXT NOT NULL, mime TEXT NOT NULL, size INTEGER NOT NULL, public INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS posts_status_date ON posts(status,created_at);
+CREATE INDEX IF NOT EXISTS jobs_status ON jobs(status);
+CREATE INDEX IF NOT EXISTS contacts_date ON contacts(created_at);
+CREATE INDEX IF NOT EXISTS applications_job ON applications(job_id);
